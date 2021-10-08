@@ -20,9 +20,9 @@ $buttonActivated = filter_input(INPUT_POST, 'calcular-area');
                 <input type="text" name="apotema" value="0"/><br />
                 <label for="medida">Unidades:</label><br />
                 <select name="medida">
-                    <option value="m^2">metros cuadrados</option>
-                    <option value="cm^2">centímetros cuadrados</option>
-                    <option value="mm^2">milímetros cuadrados</option>
+                    <option value="m">metros cuadrados</option>
+                    <option value="cm">centímetros cuadrados</option>
+                    <option value="mm">milímetros cuadrados</option>
                 </select><br />
                 <input type="submit" value="Calcular" name="calcular-area" />
                 <input type="reset" value="Limpiar" name="limpiar" />
@@ -59,7 +59,7 @@ $buttonActivated = filter_input(INPUT_POST, 'calcular-area');
                 <p>
                     Un octágono regular con lados de <?php echo htmlspecialchars(number_format($lados, 5).$medida);?>
                     y apotema de <?php echo htmlspecialchars(number_format($apotema, 5).$medida); ?> tiene un área de 
-                    <strong><?php echo htmlspecialchars(number_format($area, 5).$medida);?></strong>
+                    <strong><?php echo htmlspecialchars(number_format($area, 5).$medida.'^2');?></strong>
                 </p>
                
             <?php endif; ?>
