@@ -70,7 +70,7 @@ function loadDirectories()
                     
                     var li = document.createElement('li');
                     li.innerText = element;
-                    li.classList.add('list-group-item');
+                    li.classList.add('list-group-item', 'btn', 'btn-primary');
                     li.name = 'filepath';
                     li.setAttribute('path', element);
 
@@ -167,9 +167,14 @@ document.getElementById('directory-list').addEventListener('click', function (ev
     {
         case 'filepath':
             var encodedPath = encodeURIComponent(event.target.getAttribute('path'));
+
+            event.target.parentElement.querySelectorAll('.active').forEach(function (directory) {
+                directory.classList.remove('active');
+            });
+
+            event.target.classList.add('active');
+
             var xhr = new XMLHttpRequest();
-
-
 
             xhr.onload = function ()
             {
@@ -314,7 +319,6 @@ window.addEventListener('hashchange', function (event)
     event.preventDefault();
 
     var hash = window.location.hash;
-    console.log(hash);
 
     var tabList = document.getElementById('tab-list');
 
