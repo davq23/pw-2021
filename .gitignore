@@ -1,4 +1,4 @@
 .idea/*
-.vscode/
+.vscode/*
 nbproject/*
-workspace/*
+bloc-de-notas/workspace/*
