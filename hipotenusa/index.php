@@ -76,8 +76,6 @@ $buttonActivated = filter_input(INPUT_POST, 'calcular-hipotenusa');
                
             <?php endif; ?>
                 
-            <?php ?>
-                
             <a href="">Volver a formulario</a>
         </div>
         

@@ -64,8 +64,6 @@ $buttonActivated = filter_input(INPUT_POST, 'calcular-area');
                
             <?php endif; ?>
                 
-            <?php ?>
-                
             <a href="">Volver a formulario</a>
         </div>
         
