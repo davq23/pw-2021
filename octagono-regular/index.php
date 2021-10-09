@@ -16,8 +16,6 @@ $buttonActivated = filter_input(INPUT_POST, 'calcular-area');
             <form name="calculo-hipotenusa" method="POST">
                 <label for="lados">Longitud de los lados:</label><br />
                 <input type="text" name="lados" value="0" /><br />
-                <!--<label for="apotema">Apotema (distancia entre el centro y el exterior):</label><br />
-                <input type="text" name="apotema" value="0"/><br />-->
                 <label for="medida">Unidades:</label><br />
                 <select name="medida">
                     <option value="m">metros cuadrados</option>
