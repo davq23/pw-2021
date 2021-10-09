@@ -16,8 +16,8 @@ $buttonActivated = filter_input(INPUT_POST, 'calcular-area');
             <form name="calculo-hipotenusa" method="POST">
                 <label for="lados">Longitud de los lados:</label><br />
                 <input type="text" name="lados" value="0" /><br />
-                <label for="apotema">Apotema (distancia entre el centro y el exterior):</label><br />
-                <input type="text" name="apotema" value="0"/><br />
+                <!--<label for="apotema">Apotema (distancia entre el centro y el exterior):</label><br />
+                <input type="text" name="apotema" value="0"/><br />-->
                 <label for="medida">Unidades:</label><br />
                 <select name="medida">
                     <option value="m">metros cuadrados</option>
@@ -33,10 +33,9 @@ $buttonActivated = filter_input(INPUT_POST, 'calcular-area');
         <div>
             <?php
             $lados = filter_input(INPUT_POST, 'lados', FILTER_VALIDATE_FLOAT);
-            $apotema = filter_input(INPUT_POST, 'apotema', FILTER_VALIDATE_FLOAT);
             $medida = filter_input(INPUT_POST, 'medida');
             
-            if (!isset($medida) || empty($medida))
+            if (!isset($medida) || $medida === false)
             {
                 $medida = '';
             }
@@ -45,16 +44,19 @@ $buttonActivated = filter_input(INPUT_POST, 'calcular-area');
             $_POST = array();
             ?>
             
-            <?php if (!isset($lados) || !isset($apotema)) : ?>
+            <?php if (!isset($lados)) : ?>
             
                 <h1>Datos insuficientes</h1>
                 
-            <?php elseif ($lados === false || $apotema === false || $lados < 0 || $apotema < 0) : ?>
+            <?php elseif ($lados === false || $lados < 0) : ?>
                 
-                <h3>Alguna de las longitudes ingresadas es inválida. Por favor revise los datos ingresados</h3>
+                <h3>La longitud de los lados del octágono es inválida. Por favor, inténtelo nuevamente.</h3>
                 
             <?php else : ?>
-                <?php $area = ($lados*8)*$apotema/2; ?>
+                <?php 
+                $apotema = $lados/(2*tan(M_PI_4/2));
+                $area = $lados*8*$apotema/2; 
+                ?>
                 
                 <p>
                     Un octágono regular con lados de <?php echo htmlspecialchars(number_format($lados, 5).$medida);?>
