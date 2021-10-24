@@ -1,14 +1,15 @@
 <?php
+
 namespace Controllers;
+
+use Controllers\Controller;
 
 use App\SessionManager;
 use Repositories\ExamRepository;
 use Repositories\UserRepository;
-use Views\Exceptions\InvalidViewException;
 use Views\PHPTemplateView;
-use Views\View;
 
-class ExamController extends Controller
+class PanelController extends Controller 
 {
     private ExamRepository $examRepository;
     private SessionManager $sessionManager;
@@ -16,27 +17,29 @@ class ExamController extends Controller
 
     public function __construct(
         ExamRepository $examRepository, 
-        SessionManager $sessionManager, 
-        UserRepository $userRepository
-    ) {
+        SessionManager $sessionManager,
+        UserRepository $userRepository) {
         $this->examRepository = $examRepository;
         $this->sessionManager = $sessionManager;
         $this->userRepository = $userRepository;
     }
 
-    /**
-     * @throws InvalidViewException
-     */
-    public function index(): View
+    public function index(): PHPTemplateView
     {
         $userId = $this->auth($this->sessionManager);
 
-        $exams = $this->examRepository->fetchAll(100, 0);
         $currentUser = $this->userRepository->findById($userId);
-        
-        return new PHPTemplateView('exams.php', array(
-            'exams' => $exams,
-            'current_user' => $currentUser
+
+        $examCount = $this->examRepository->getExamCountByUserId($userId);
+
+        return new PHPTemplateView('panel.php', array(
+            'current_user' => $currentUser,
+            'exam_count' => $examCount
         ));
+    }
+
+    public function redirectPanel() 
+    {
+        $this->redirect('panel', true);
     }
 }

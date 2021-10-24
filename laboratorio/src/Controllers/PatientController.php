@@ -2,18 +2,27 @@
 
 namespace Controllers;
 
+use App\SessionManager;
 use Controllers\Exceptions\BadRequestException;
 use Domains\Patient;
 use Exception;
+use Repositories\ExamRepository;
 use Repositories\PatientRepository;
 
 class PatientController extends Controller
 {
     private PatientRepository $patientRepository;
+    private ExamRepository $examRepository;
+    private SessionManager $sessionManager;
 
-    public function __construct(PatientRepository $patientRepository)
-    {
+    public function __construct(
+        PatientRepository $patientRepository,
+        ExamRepository $examRepository,
+        SessionManager $sessionManager
+    ) {
+        $this->examRepository = $examRepository;
         $this->patientRepository = $patientRepository;
+        $this->sessionManager = $sessionManager;
     }
 
     /**
@@ -22,7 +31,9 @@ class PatientController extends Controller
      */
     public function index(): array
     {
-        $limit = filter_input(INPUT_GET, 'limit', FILTER_SANITIZE_NUMBER_INT);
+        $this->auth($this->sessionManager);
+
+        $limit = filter_input(INPUT_GET, 'limit', FILTER_VALIDATE_INT);
         $offset = filter_input(INPUT_GET, 'offset', FILTER_VALIDATE_INT,
             ['options' => FILTER_NULL_ON_FAILURE]);
 
@@ -33,11 +44,13 @@ class PatientController extends Controller
     }
 
     /**
-     * @return Patient|null
+     * @return Patient
      * @throws Exception
      */
-    public function register(): ?Patient
+    public function register(): Patient
     {
+        $this->auth($this->sessionManager, true, Controller::AJAX_REQUEST);
+
         $body = $this->getJsonBody();
 
         if ($body === false) {
@@ -45,7 +58,6 @@ class PatientController extends Controller
         }
 
         $patient = Patient::fromArray($body);
-
         $patient->validate();
 
         $this->patientRepository->registerPatient($patient);

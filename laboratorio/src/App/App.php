@@ -1,6 +1,7 @@
 <?php
 namespace App;
 
+use App\Exceptions\UnauthorizedRequestException;
 use Controllers\Controller;
 use Controllers\Exceptions\BadRequestException;
 use Database\DBConnection;
@@ -8,31 +9,41 @@ use Domains\Exceptions\InvalidDomainException;
 use Exception;
 use ReflectionClass;
 use ReflectionException;
+use Views\View;
 
 /**
  * App instance
  */
 class App
 {
-    protected ?DBConnection $db;
-    protected array $injectables;
+    protected ?DBConnection $dbConnection;
+    protected ?array $injectables;
     protected ?Router $router;
+    protected ?SessionManager $sessionManager;
 
     /**
      * @param Router $router
-     * @param DBConnection $db
+     * @param DBConnection $dbConnection
      */
-    public function __construct(Router $router, DBConnection $db)
-    {
+    public function __construct(
+        Router $router,
+        DBConnection $dbConnection,
+        SessionManager $sessionManager
+    ) {
         $this->router = $router;        
-        $this->db = $db;
-        $this->injectables[get_class($db)] = $db;
+        $this->dbConnection = $dbConnection;
+        $this->sessionManager = $sessionManager;
+
+        $this->injectables[get_class($dbConnection)] = $dbConnection;
+        $this->injectables[get_class($sessionManager)] = $sessionManager;
     }
 
     public function __destruct()
     {
-        $this->db = null;
+        $this->dbConnection = null;
+        $this->injectables = null;
         $this->router = null;
+        $this->sessionManager = null;
     }
 
     /**
@@ -40,23 +51,38 @@ class App
      *
      * @param Controller $controllerInstance
      * @param string $classMethod
+     * @return false|string|null
      */
-    private function executeControllerMethod(Controller $controllerInstance, string $classMethod)
-    {
+    private function executeControllerMethod(
+        Controller $controllerInstance,
+        string $classMethod
+    ) {
         try {
             $result = call_user_func(array($controllerInstance, $classMethod));
 
-            if (is_array($result) || is_object($result)) {
-                echo json_encode($result);
+            if ($result instanceof View) {
+                return $result->render();
+            } else if (is_array($result) || is_object($result)) {
+                return json_encode($result);
             }
         } catch (BadRequestException $badRequestException) {
             http_response_code(400);
+        } catch (UnauthorizedRequestException $unauthorizedRequestException) {
+            http_response_code(401);
+
+            if ($unauthorizedRequestException->getCode() !== Controller::AJAX_REQUEST) {
+                $controllerInstance->redirect($unauthorizedRequestException->getMessage(), true);
+            } else {
+                return $unauthorizedRequestException->getMessage();
+            }
         } catch (InvalidDomainException $invalidDomainException) {
             http_response_code(422);
         } catch (Exception $ex) {
             error_log($ex->getMessage());
             http_response_code(500);
         }
+
+        return null;
     }
 
     /**
@@ -65,18 +91,20 @@ class App
      * @param string $className
      * @return string|null
      */
-    private function handleInterface(string $className): ?string
+    private function getImplementationTypeName(string $className): ?string
     {
         if (!interface_exists($className)) {
             return null;
         }
 
         if (strpos($className, 'Repositories\\') !== false) {
-            $dbPrefixName = str_replace('DBConnection', '', get_class($this->db));
+            $dbPrefixName = str_replace('DBConnection', '', get_class($this->dbConnection));
             $dbPrefixName = str_replace('Database\\', '', $dbPrefixName);
             $bareClassName = str_replace('Repositories\\', '', $className);
 
             return "Repositories\\$dbPrefixName\\$dbPrefixName$bareClassName";
+        } else if ($className === 'SessionManager') {
+            return get_class($this->sessionManager);
         }
 
         return null;
@@ -88,33 +116,35 @@ class App
      * @param string $className
      * @return mixed
      * @throws ReflectionException
+     * @throws Exception
      */
     public function injectClass(string $className)
     {
         $params = array();
         $reflection = new ReflectionClass($className);
         $parameters = $reflection->getConstructor()->getParameters();
+
         foreach ($parameters as $parameter) {
             if ($type = $parameter->getType()) {
                 $classInstance = null;
                 $typeName = $type->getName();
 
                 foreach ($this->injectables as $injectable) {
-
                     if ($injectable instanceof $typeName) {
                         $classInstance = $injectable;
                         break;
                     }
                 }
-
                 if (is_null($classInstance)) {
-                    $typeName = $this->handleInterface($typeName) ?? $typeName;
+                    $typeName = $this->getImplementationTypeName($typeName) ?? $typeName;
                     $classInstance = $this->injectClass($typeName);
 
                     $injectables[$typeName] = $classInstance;
                 }
 
                 $params[] = $classInstance;
+            } else {
+                throw new \Exception('All injectable parameters must be classes or interfaces');
             }
         }
 
@@ -126,7 +156,7 @@ class App
      *
      * @throws ReflectionException
      */
-    public function run()
+    public function run(): void
     {
         $controllerClassMethodArray = $this->router->run();
 
@@ -139,6 +169,10 @@ class App
 
         $controller = $this->injectClass($className);
 
-        $this->executeControllerMethod($controller, $classMethod);
+        $result = $this->executeControllerMethod($controller, $classMethod);
+
+        if (is_string($result)) {
+            echo $result;
+        }
     }
 }

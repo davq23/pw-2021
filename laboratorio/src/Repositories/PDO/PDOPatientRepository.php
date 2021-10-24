@@ -3,6 +3,7 @@
 namespace Repositories\PDO;
 
 use Domains\Patient;
+use Repositories\Exceptions\DomainNotFoundException;
 use Repositories\PatientRepository;
 
 /**
@@ -11,24 +12,18 @@ use Repositories\PatientRepository;
 class PDOPatientRepository extends PDORepository implements PatientRepository
 {
     /** {@inheritDoc} */
-    public function fetchAll(int $limit, int $offset = 0): array
+    public function fetchAll(int $limit, int $pageNumber = 0): array
     {
         $patients = array();
+        $patientArray = $this->dbConnection->fetchAllOffsetPaginated('patients', '*', $limit, $pageNumber);
 
-        $statement = $this->pdo()->prepare('SELECT * FROM patients LIMIT ? OFFSET ?');
 
-
-        $statement->bindParam(1, $limit, \PDO::PARAM_INT);
-        $statement->bindParam(2, $offset, \PDO::PARAM_INT);
-
-        $statement->execute();
-
-        while ($patientArray = $statement->fetch((\PDO::FETCH_ASSOC))) {
+        foreach ($patientArray as $patientRow) {
             $patients[] = new Patient(
-                $patientArray['id'],
-                $patientArray['surnames'],
-                $patientArray['family_names'],
-                new \DateTime($patientArray['birthday'])
+                $patientRow['id'],
+                $patientRow['surnames'],
+                $patientRow['family_names'],
+                new \DateTime($patientRow['birthday'])
             );
         }
 
@@ -53,7 +48,11 @@ class PDOPatientRepository extends PDORepository implements PatientRepository
                 $patientArray['family_names'],
                 new \DateTime($patientArray['birthday'])
             );
-        } 
+        }
+
+        if (is_null($patient)) {
+            throw new DomainNotFoundException();
+        }
 
         return $patient;
     }
@@ -82,10 +81,10 @@ class PDOPatientRepository extends PDORepository implements PatientRepository
     }
 
     /** {@inheritDoc} */
-    public function registerPatient(Patient $patient): void
+    public function registerPatient(Patient $patient): Patient
     {
         $statement = $this->pdo()->prepare(
-            'INSERT INTO (surnames, family_names, birthday) VALUES (?, ?, ?)'
+            'INSERT INTO patients (surnames, family_names, birthday) VALUES (?, ?, ?)'
         );
 
         $surnames = $patient->getSurnames();
@@ -99,5 +98,7 @@ class PDOPatientRepository extends PDORepository implements PatientRepository
         $statement->execute();
 
         $patient->setId($this->pdo()->lastInsertId());
+
+        return $patient;
     }
 }

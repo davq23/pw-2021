@@ -10,16 +10,21 @@ use PDO;
  */
 class PDORepository
 {
-    private ?PDODBConnection $connection;
+    protected ?PDODBConnection $dbConnection;
 
     public function __construct(PDODBConnection $connection)
     {
-        $this->connection = $connection;
+        $this->dbConnection = $connection;
     }
 
     public function __destruct()
     {
-        $this->connection = null;
+        $this->dbConnection = null;
+    }
+
+    public function getConnection(): ?PDODBConnection
+    {
+        return $this->dbConnection;
     }
 
     /**
@@ -29,6 +34,6 @@ class PDORepository
      */
     public function pdo(): PDO
     {
-        return $this->connection->getConnection();
+        return $this->dbConnection->getConnection();
     }
 }

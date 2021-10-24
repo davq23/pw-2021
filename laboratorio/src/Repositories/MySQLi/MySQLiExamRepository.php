@@ -12,14 +12,38 @@ class MySQLiExamRepository extends MySQLiRepository implements \Repositories\Exa
      */
     public function fetchAll(int $limit, int $offset): array
     {
-        // TODO: Implement fetchAll() method.
+        $exams = array();
+        $examArray = $this->dbConnection->fetchAllOffsetPaginated('exams', '*', $limit, $offset);
+
+        foreach ($examArray as $examRow) {
+            $exams[] = new Exam();
+        }
+
+        return $exams;
     }
 
     /**
      * @inheritDoc
      */
-    public function registerExam(Exam $exam)
+    public function registerExam(Exam $exam): Exam
     {
-        // TODO: Implement registerExam() method.
+        return new Exam();
+    }
+
+    /** {@inheritDoc} */
+    public function getExamCountByUserId($userId): int
+    {
+        $statement = $this->mysqli()->prepare('SELECT COUNT(id) AS num_exams FROM exams WHERE user_id = ?');
+
+        $statement->bind_param(1, $userId);
+
+        $numExams = null;
+        $statement->bind_result($numExams);
+
+        $statement->fetch(\PDO::FETCH_ASSOC);
+
+        $statement->close();
+
+        return $numExams;
     }
 }

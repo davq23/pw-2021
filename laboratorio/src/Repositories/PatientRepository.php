@@ -3,6 +3,7 @@ namespace Repositories;
 
 use Domains\Patient;
 use Exception;
+use Repositories\Exceptions\DomainNotFoundException;
 
 /**
  * Encompasses all storage-related activities involving patients
@@ -24,7 +25,7 @@ interface PatientRepository
      *
      * @param $id
      * @return Patient|null
-     * @throws Exception
+     * @throws DomainNotFoundException
      */
     public function findById($id): ?Patient;
 
@@ -41,8 +42,7 @@ interface PatientRepository
      * Registers a patient
      *
      * @param Patient $patient
-     * @return array
-     * @throws Exception
+     * @throws DomainNotFoundException
      */
-    public function registerPatient(Patient $patient): void;
+    public function registerPatient(Patient $patient): Patient;
 }

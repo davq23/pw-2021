@@ -1,12 +1,13 @@
 <?php
 namespace Domains\Exceptions;
 
+use Exception;
 use Throwable;
 
 /**
  * Exception for domains unable to be validated
  */
-class InvalidDomainException extends \Exception
+class InvalidDomainException extends Exception
 {
     protected string $fieldError;
 

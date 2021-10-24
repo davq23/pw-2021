@@ -1,6 +1,8 @@
 <?php
 
-class InvalidViewException extends Exception
+namespace Views\Exceptions;
+
+class InvalidViewException extends \Exception
 {
 
 }

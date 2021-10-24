@@ -1,4 +1,5 @@
 <?php
+const BASE_URL = 'http://localhost/pw-2021/laboratorio/public/';
 
 spl_autoload_register(function ($className)
 {

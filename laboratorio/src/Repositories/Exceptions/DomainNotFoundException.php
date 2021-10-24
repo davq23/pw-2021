@@ -2,7 +2,9 @@
 
 namespace Repositories\Exceptions;
 
-class DomainNotFound extends Exception
+use Exception;
+
+class DomainNotFoundException extends Exception
 {
 
 }

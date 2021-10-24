@@ -2,10 +2,15 @@
 
 namespace Domains;
 
+use DateTime;
 use Domains\Exceptions\InvalidDomainException;
 
 class Exam implements Domain
 {
+    private DateTime $bookingDate;
+    private DateTime $plannedDate;
+    private DateTime $actualDate;
+    private string $description;
 
     /**
      * @inheritDoc
@@ -20,7 +25,7 @@ class Exam implements Domain
      */
     public static function fromArray(array $source): Domain
     {
-        // TODO: Implement fromArray() method.
+        return new Exam();
     }
 
     /**
