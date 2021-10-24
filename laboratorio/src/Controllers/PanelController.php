@@ -18,7 +18,8 @@ class PanelController extends Controller
     public function __construct(
         ExamRepository $examRepository, 
         SessionManager $sessionManager,
-        UserRepository $userRepository) {
+        UserRepository $userRepository
+    ) {
         $this->examRepository = $examRepository;
         $this->sessionManager = $sessionManager;
         $this->userRepository = $userRepository;
