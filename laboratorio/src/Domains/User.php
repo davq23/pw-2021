@@ -93,10 +93,6 @@ class User implements Domain
         if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
             throw new InvalidDomainException('Invalid email');
         }
-
-        if (!$this->passwordHashed && !preg_match('', $this->password)) {
-            throw new InvalidDomainException('Username must contain at least 4 alphanumeric characters');
-        }
     }
 
     public static function fromArray(array $source): User
