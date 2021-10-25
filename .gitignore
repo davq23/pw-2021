@@ -1,4 +1,8 @@
+favicon.ico
+
+
 .idea/*
 .vscode/*
-nbproject/*
+*/public/assets/*
 bloc-de-notas/workspace/*
+nbproject/*
