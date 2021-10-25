@@ -2,8 +2,6 @@
 
 namespace Database;
 
-use function PHPSTORM_META\map;
-
 class MySQLiDBConnection implements DBConnection
 {
     protected \mysqli $connection;
@@ -25,7 +23,7 @@ class MySQLiDBConnection implements DBConnection
     }
 
     /** {@inheritDoc} */
-    public function fetchAll(string $tableName, array|string $columns = '*'): array
+    public function fetchAll(string $tableName, $columns = '*'): array
     {
         $rows = array();
 
@@ -59,7 +57,7 @@ class MySQLiDBConnection implements DBConnection
     /** {@inheritDoc} */
     public function fetchAllOffsetPaginated(
         string $tableName, 
-        array|string $columns, 
+        $columns, 
         int $limit, 
         int $pageNumber
     ): array {

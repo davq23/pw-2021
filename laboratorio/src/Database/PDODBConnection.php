@@ -24,7 +24,7 @@ class PDODBConnection implements DBConnection
     }
 
     /** {@inheritDoc} */
-    public function fetchAll(string $tableName, array|string $columns = '*'): array
+    public function fetchAll(string $tableName, $columns = '*'): array
     {
         $rows = array();
 
@@ -52,7 +52,7 @@ class PDODBConnection implements DBConnection
     /** {@inheritDoc} */
     public function fetchAllOffsetPaginated(
         string $tableName, 
-        array|string $columns, 
+        $columns, 
         int $limit, 
         int $pageNumber
     ): array {
