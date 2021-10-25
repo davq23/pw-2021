@@ -1,7 +1,7 @@
 <?php require_once 'layout/header.php' ?>
 
 <div class="container mt-4">
-    <div class="row">
+    <div class="row d-flex justify-content-between flex-wrap">
         <div class="col-4 btn-primary py-2 rounded">
             <div class="row">
                 <div class="col">
