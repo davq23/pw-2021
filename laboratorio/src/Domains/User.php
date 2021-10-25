@@ -52,6 +52,7 @@ class User implements Domain
     {
         $this->password = $password;
     }
+    
     private $id;
 
     /**
@@ -84,6 +85,7 @@ class User implements Domain
     }
 
 
+    /** {@inheritDoc} */
     public function validate(): void
     {
         if (!preg_match('/^[A-Za-z0-9_\-]{4,45}$/', $this->username)) {
@@ -92,6 +94,15 @@ class User implements Domain
 
         if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
             throw new InvalidDomainException('Invalid email');
+        }
+
+        if (
+            !$this->ṕasswordHashed && 
+            !preg_match('/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/', $this->password)
+        ) {
+            throw new InvalidDomainException(
+                'Password must be at least 8 characters long and contain letters, numbers and special characters'
+            );
         }
     }
 
