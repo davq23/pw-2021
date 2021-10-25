@@ -52,7 +52,7 @@ class SignupController extends Controller
         );
         
         try {
-            if (!$userArray['username'] || !$userArray['email'] || !$userArray['password']) {
+            if (!is_array($userArray) || !$userArray['username'] || !$userArray['email'] || !$userArray['password']) {
                 throw new BadRequestException('Invalid or missing information');
             }
             try {
