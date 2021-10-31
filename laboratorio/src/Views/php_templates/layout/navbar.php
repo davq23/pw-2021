@@ -37,10 +37,11 @@
                 <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-person-fill"></i> <?= $this->data['current_user']->getUsername() ?>
                 </a>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton1">
                     <li><a class="dropdown-item" href="#">Profile info</a></li>
                     <li><a class="dropdown-item" href="#">Another action</a></li>
-                    <li class="text-end">
+                    <li><hr class="dropdown-divider"></li>
+                    <li class="text-center">
                         <form action="<?= BASE_URL . 'logout' ?>" method="post">
                             <button type="logout" class="btn btn-danger"><i class="bi bi-door-open-fill"></i> Log out</button>
                         </form>
