@@ -30,6 +30,14 @@ interface PatientRepository
     public function findById($id): ?Patient;
 
     /**
+     * Fetches one patient by user_id
+     *
+     * @param $userId
+     * @return Patient
+     */
+    public function findByUserId($userId): Patient;
+
+    /**
      * Search patients by name
      *
      * @param string $name
@@ -45,4 +53,12 @@ interface PatientRepository
      * @throws DomainNotFoundException
      */
     public function registerPatient(Patient $patient): Patient;
+
+    /**
+     * Updates a patient
+     *
+     * @param Patient $patient
+     * @throws DomainNotFoundException
+     */
+    public function updatePatient(Patient $patient): Patient;
 }
