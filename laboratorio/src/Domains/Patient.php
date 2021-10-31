@@ -2,6 +2,9 @@
 
 namespace Domains;
 
+use DateTime;
+use Domains\Exceptions\InvalidDomainException;
+
 class Patient implements Domain
 {
     /**
@@ -53,26 +56,32 @@ class Patient implements Domain
     }
 
     /**
-     * @return \DateTime
+     * @return string
      */
-    public function getBirthday(): \DateTime
+    public function getBirthday(): string
     {
         return $this->birthday;
     }
 
     /**
-     * @param \DateTime $birthday
+     * @param string $birthday
      */
-    public function setBirthday(\DateTime $birthday): void
+    public function setBirthday(string $birthday): void
     {
         $this->birthday = $birthday;
     }
+
+    public function getAge(): int
+    {
+        return DateTime::createFromFormat('Y-m-d', $this->birthday)->diff(new DateTime())->y;
+    }
+
     protected $id;
     protected string $surnames;
     protected string $familyNames;
-    protected \DateTime $birthday;
+    protected string $birthday;
 
-    public function __construct($id, string $surnames, string $familyNames, \DateTime $birthday)
+    public function __construct($id, string $surnames, string $familyNames, string $birthday)
     {
         $this->surnames = $surnames;
         $this->familyNames = $familyNames;
@@ -82,6 +91,17 @@ class Patient implements Domain
     /** {@inheritDoc} */
     public function validate(): void
     {
+        if (!preg_match('/^[\w]+\s[\w]+$/', $this->surnames)) {
+            throw new InvalidDomainException('Invalid surnames');
+        }
+
+        if (!preg_match('/^[\w]+\s[\w]+$/', $this->familyNames)) {
+            throw new InvalidDomainException('Invalid family names');
+        }
+
+        if (!DateTime::createFromFormat('Y-m-d', $this->birthday)) {
+            throw new InvalidDomainException('Invalid date');
+        }
     }
 
     /** {@inheritDoc} */
@@ -95,13 +115,14 @@ class Patient implements Domain
         );
     }
 
+    /** {@inheritDoc} */
     public static function fromArray(array $source): Patient
     {
         return new Patient(
             $source['id'] ?? null,
             $source['surnames'] ?? null,
             $source['family_names'] ?? null,
-            isset($source['birthday']) ? new \DateTime($source['birthday']) : null
+            isset($source['birthday']) ? $source['birthday'] : null
         );
     }
 }
