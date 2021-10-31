@@ -50,15 +50,9 @@ class LoginController extends Controller
             array(
                 'username-email' => FILTER_DEFAULT,
                 'password' => FILTER_DEFAULT
-            )
+            ),
+            true
         );
-
-        if (!$userArray || !$userArray['username-email'] || !$userArray['password']) {
-            $this->sessionManager->setFlash('message', 'Invalid username or password');
-            $this->sessionManager->setFlash('user_array', $userArray);
-
-            $this->redirect('login', true);
-        }
 
         try {
             if (filter_var($userArray['username-email'], FILTER_VALIDATE_EMAIL)) {

@@ -41,7 +41,6 @@ class SignupController extends Controller
         $this->auth($this->sessionManager, false);
 
         $errorMessage = null;
-
         $userArray = filter_input_array(
             INPUT_POST, 
             array(
@@ -52,9 +51,8 @@ class SignupController extends Controller
         );
         
         try {
-            if (!is_array($userArray) || !$userArray['username'] || !$userArray['email'] || !$userArray['password']) {
-                throw new BadRequestException('Invalid or missing information');
-            }
+            User::fromArray($userArray)->validate();
+
             try {
                 $this->userRepository->findByUsername($userArray['username']);
                 throw new BadRequestException('Username is alredy taken');
