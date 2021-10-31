@@ -4,25 +4,32 @@ namespace Controllers;
 
 use App\SessionManager;
 use Controllers\Exceptions\BadRequestException;
+use Domains\Exceptions\InvalidDomainException;
 use Domains\Patient;
 use Exception;
 use Repositories\ExamRepository;
+use Repositories\Exceptions\DomainNotFoundException;
 use Repositories\PatientRepository;
+use Repositories\UserRepository;
+use Views\PHPTemplateView;
 
 class PatientController extends Controller
 {
     private PatientRepository $patientRepository;
     private ExamRepository $examRepository;
     private SessionManager $sessionManager;
+    private UserRepository $userRepository;
 
     public function __construct(
         PatientRepository $patientRepository,
         ExamRepository $examRepository,
-        SessionManager $sessionManager
+        SessionManager $sessionManager,
+        UserRepository $userRepository
     ) {
         $this->examRepository = $examRepository;
         $this->patientRepository = $patientRepository;
         $this->sessionManager = $sessionManager;
+        $this->userRepository = $userRepository;
     }
 
     /**
@@ -43,25 +50,80 @@ class PatientController extends Controller
         return $this->patientRepository->fetchAll($limit, $offset);
     }
 
-    /**
-     * @return Patient
-     * @throws Exception
-     */
-    public function register(): Patient
+    public function registerForm() : PHPTemplateView
     {
-        $this->auth($this->sessionManager, true, Controller::AJAX_REQUEST);
+        $userId = $this->auth($this->sessionManager);
 
-        $body = $this->getJsonBody();
+        $user = $this->userRepository->findById($userId);
 
-        if ($body === false) {
-            throw new BadRequestException("Invalid body");
+        try {            
+            if ($this->patientRepository->findByUserId($userId)) {
+                $this->redirect('panel');
+            }
+        } catch (\Throwable $th) {
         }
 
-        $patient = Patient::fromArray($body);
-        $patient->validate();
+        return new PHPTemplateView('register-patient.php', array(
+            'current_user' => $user,
+        ));
+    }
 
-        $this->patientRepository->registerPatient($patient);
+    /**
+     * @throws Exception
+     */
+    public function register(): void
+    {
+        $userId = $this->auth($this->sessionManager);
 
-        return $patient;
+        try {
+            $this->patientRepository->findByUserId($userId);
+            
+            $this->sessionManager->setFlash('message-danger', 'User already has patient info');
+            $this->redirect('patient/register', true);
+        } catch (DomainNotFoundException $domainNotFoundException) {}
+
+        try {
+            $patient = Patient::fromArray($_POST);
+            $patient->validate();
+            $this->patientRepository->registerPatient($patient);
+        } catch (InvalidDomainException $invalidDomainException) {
+            $this->sessionManager->setFlash('message-danger', $invalidDomainException->getMessage());
+            $this->redirect('patient/register', true);
+        } catch (Exception $exception) {
+            error_log($exception->getMessage());
+            $this->sessionManager->setFlash('message-danger', 'Unexpected error');
+            $this->redirect('patient/register', true);
+        }
+
+        $this->sessionManager->setFlash('message-success', 'Patient info successfully registered');
+        $this->redirect('patient', true);
+    }
+
+    public function update(): void
+    {
+        $userId = $this->auth($this->sessionManager);
+
+        try {
+            $oldPatient = $this->patientRepository->findByUserId($userId);
+
+            $newPatient = Patient::fromArray($_POST);
+            $newPatient->validate();
+            
+            $newPatient->setId($oldPatient->getId());
+            $this->patientRepository->updatePatient($newPatient);
+        } catch (DomainNotFoundException $domainNotFoundException) {
+            $this->sessionManager->setFlash('message-danger', 'User has no patient info');
+            $this->redirect('patient/register', true);
+        } catch (InvalidDomainException $invalidDomainException) {
+            $this->sessionManager->setFlash('message-danger', $invalidDomainException->getMessage());
+            $this->redirect('patient/update', true);
+        } catch (Exception $exception) {
+            error_log($exception->getMessage());
+            $this->sessionManager->setFlash('message-danger', 'Unexpected error');
+            $this->redirect('patient/update', true);
+        }
+
+        $this->sessionManager->setFlash('message-success', 'Patient info successfully updated');
+        $this->redirect('patient', true);
     }
 }
