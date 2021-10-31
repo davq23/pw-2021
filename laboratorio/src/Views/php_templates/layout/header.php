@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title><?=$his->data['title'] ?? 'Laboratorio'?></title>
     <meta charset="UTF-8" />
