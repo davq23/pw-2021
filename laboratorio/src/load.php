@@ -21,6 +21,7 @@ $sessionManager = new DefaultSessionManager();
 $router->GET('(:empty)', PanelController::class, 'redirectPanel');
 $router->GET('panel/(:empty)', PanelController::class, 'index');
 $router->GET('patients/(:empty)', PatientController::class, 'index');
+$router->GET('patients/register', PatientController::class, 'registerForm');
 $router->POST('patients/(:empty)', PatientController::class, 'register');
 $router->GET('exams/(:empty)', ExamController::class, 'index');
 $router->GET('login/(:empty)', LoginController::class, 'loginForm');
