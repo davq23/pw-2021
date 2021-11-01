@@ -44,7 +44,8 @@ class LoginController extends Controller
     public function postLoginForm(): void
     {
         $this->auth($this->sessionManager, false);
-
+        
+        $user = null;
         $userArray = filter_input_array(
             INPUT_POST, 
             array(
