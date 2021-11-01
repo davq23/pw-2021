@@ -2,9 +2,7 @@
 
 namespace Repositories\MySQLi;
 
-use DateTime;
 use Domains\Patient;
-use Exception;
 use Repositories\Exceptions\DomainNotFoundException;
 use Repositories\PatientRepository;
 
