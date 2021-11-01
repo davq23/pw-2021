@@ -52,8 +52,6 @@ class PGUserRepository extends PGRepository implements UserRepository
     
         $result = pg_execute($this->pg(), '', array($username));
 
-        if (!$result) throw new Exception(pg_last_error($this->pg()));
-
         while($row = pg_fetch_assoc($result)) {
             $user = new User($row['id'], $row['email'], $username, $row['password']);
         }
