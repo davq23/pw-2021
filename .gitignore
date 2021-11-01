@@ -6,3 +6,6 @@ favicon.ico
 */public/assets/*
 bloc-de-notas/workspace/*
 nbproject/*
+*/nbproject/*
+*/logs/*
+logs/*
