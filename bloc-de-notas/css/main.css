@@ -12,4 +12,7 @@ textarea
     white-space: pre-wrap;
 }
 
+.text-red {
+    color: red;
+}
 

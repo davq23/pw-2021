@@ -154,7 +154,7 @@ document.getElementById('tab-list').addEventListener('click', function (event)
             this.querySelector('a[href="#' + fileId + '"]').parentElement.remove();
             document.getElementById(fileId).remove();
 
-            if (window.location.hash = '#' + fileId)
+            if (window.location.hash === '#' + fileId)
             {
                 window.location.hash = '';
             }
@@ -242,6 +242,9 @@ document.getElementById('create-file-form').addEventListener('submit', function 
     {
         input.disabled = true;
     });
+    
+    var errorTag = this.querySelector('strong');
+    errorTag.innerText = '';
 
     var form = this;
 
@@ -257,6 +260,58 @@ document.getElementById('create-file-form').addEventListener('submit', function 
             case 200:
                 bootstrap.Modal.getOrCreateInstance(document.getElementById('createFileModal')).hide();
                 loadDirectories();
+                break;
+                
+            default:
+                errorTag.innerText = this.responseText;
+                break;
+        }
+    };
+
+    xhr.open('POST', this.getAttribute('action'), true);
+
+    xhr.send(formData);
+});
+
+document.getElementById('delete-file-form').addEventListener('submit', function (event)
+{
+    event.preventDefault();
+
+    var formData = new FormData(this);
+
+    var xhr = new XMLHttpRequest();
+
+    this.querySelector('input,textarea', function (input)
+    {
+        input.disabled = true;
+    });
+
+    if (document.getElementById(formData.get('filename'))) {
+        alert('Close the file before deleting');
+        return;
+    }
+    
+    var errorTag = this.querySelector('strong');
+    errorTag.innerText = '';
+
+    var form = this;
+
+    xhr.onload = function ()
+    {
+        form.querySelector('input,textarea', function (input)
+        {
+            input.disabled = false;
+        });
+
+        switch (xhr.status)
+        {
+            case 200:
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteFileModal')).hide();
+                loadDirectories();
+                break;
+                
+            default:
+                errorTag.innerText = this.responseText;
                 break;
         }
     };
@@ -279,6 +334,8 @@ document.getElementById('create-dir-form').addEventListener('submit', function (
     {
         input.disabled = true;
     });
+    
+    var errorTag = this.querySelector('strong');
 
     var form = this;
 
@@ -295,6 +352,9 @@ document.getElementById('create-dir-form').addEventListener('submit', function (
                 bootstrap.Modal.getOrCreateInstance(document.getElementById('createDirModal')).hide();
                 loadDirectories();
                 break;
+            default:
+                errorTag.innerText = this.responseText;
+                break;
         }
     };
 
@@ -310,6 +370,10 @@ document.querySelectorAll('.modal').forEach(function (modal)
         this.querySelectorAll('input').forEach(function(input) 
         {
             input.value = '';
+        });
+        
+        this.querySelectorAll('strong').forEach(function(strong) {
+            strong.innerText = '';
         });
     });
 });
