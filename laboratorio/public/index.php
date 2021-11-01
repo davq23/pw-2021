@@ -6,5 +6,5 @@ require_once '../src/load.php';
 try {
     $app->run();
 } catch (Exception $e) {
-    echo $e->getMessage();
+    error_log($e->getMessage());
 }
