@@ -3,13 +3,12 @@
 namespace Repositories\MySQLi;
 
 use Domains\Exam;
+use Repositories\ExamRepository;
 
-class MySQLiExamRepository extends MySQLiRepository implements \Repositories\ExamRepository
+class MySQLiExamRepository extends MySQLiRepository implements ExamRepository
 {
 
-    /**
-     * @inheritDoc
-     */
+    /** {@inheritDoc} */
     public function fetchAll(int $limit, int $offset): array
     {
         $exams = array();
@@ -22,9 +21,7 @@ class MySQLiExamRepository extends MySQLiRepository implements \Repositories\Exa
         return $exams;
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** {@inheritDoc} */
     public function registerExam(Exam $exam): Exam
     {
         return new Exam();
@@ -35,12 +32,14 @@ class MySQLiExamRepository extends MySQLiRepository implements \Repositories\Exa
     {
         $statement = $this->mysqli()->prepare('SELECT COUNT(id) AS num_exams FROM exams WHERE user_id = ?');
 
-        $statement->bind_param(1, $userId);
+        $statement->bind_param('s', $userId);
 
         $numExams = null;
         $statement->bind_result($numExams);
 
-        $statement->fetch(\PDO::FETCH_ASSOC);
+        $statement->execute();
+
+        $statement->fetch();
 
         $statement->close();
 

@@ -1,4 +1,5 @@
 <?php
+
 namespace Repositories\MySQLi;
 
 use Domains\User;
@@ -7,25 +8,22 @@ use Repositories\UserRepository;
 
 class MySQLiUserRepository extends MySQLiRepository implements UserRepository
 {
-    /**
-     * @inheritDoc
-     */
+    /** {@inheritDoc} */
     public function findById($id): User
     {
         $user = null;
-        $id = null;
         $username = null;
         $email = null;
         $password = null;
 
-        $statement = $this->mysqli()->prepare('SELECT * FROM users WHERE id = ? LIMIT 1');
+        $statement = $this->mysqli()->prepare('SELECT username, email, password FROM users WHERE id = ? LIMIT 1');
         $statement->bind_param('s', $id);
 
-        $statement->bind_result($id, $username, $email, $password);
+        $statement->bind_result($username, $email, $password);
 
         $statement->execute();
 
-        while($statement->fetch()) {
+        while ($statement->fetch()) {
             $user = new User($id, $email, $username, $password);
         }
 
@@ -36,9 +34,7 @@ class MySQLiUserRepository extends MySQLiRepository implements UserRepository
         return $user;
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** {@inheritDoc} */
     public function findByEmail(string $email): User
     {
         $user = null;
@@ -53,7 +49,7 @@ class MySQLiUserRepository extends MySQLiRepository implements UserRepository
 
         $statement->execute();
 
-        while($statement->fetch()) {
+        while ($statement->fetch()) {
             $user = new User($id, $email, $username, $password, true);
         }
 
@@ -64,9 +60,7 @@ class MySQLiUserRepository extends MySQLiRepository implements UserRepository
         return $user;
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** {@inheritDoc} */
     public function findByUsername(string $username): User
     {
         $user = null;
@@ -81,7 +75,7 @@ class MySQLiUserRepository extends MySQLiRepository implements UserRepository
 
         $statement->execute();
 
-        while($statement->fetch()) {
+        while ($statement->fetch()) {
             $user = new User($id, $email, $username, $password);
         }
 
@@ -92,9 +86,7 @@ class MySQLiUserRepository extends MySQLiRepository implements UserRepository
         return $user;
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** {@inheritDoc} */
     public function registerUser(User $user): User
     {
         $statement = $this->mysqli()->prepare(
