@@ -1,6 +1,7 @@
 favicon.ico
 notes.png
 
+bloc-de-notas/config/*
 .idea/*
 .vscode/*
 */public/assets/*
