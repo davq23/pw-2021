@@ -221,28 +221,23 @@ $method = $_SERVER['REQUEST_METHOD'];
             session_destroy();
         }
 
-        header('Location: ', true);
+        header('Location: ./', true);
         exit();
 
     elseif (!$auth && $method === 'POST'):
         if (!isset($_POST['login'])) {
             $_SESSION['message'] = 'Invalid login';
-            header('Location: ', true);
+            header('Location: ./', true);
             exit();
         }
 
-        $mysqli = mysqli_connect(
-            getenv('db_hostname'),
-            getenv('db_username'),
-            getenv('db_password'),
-            getenv('db_name')
-        );
+        require_once 'config/database.php';
 
         if (!$mysqli) {
             http_response_code(500);
             error_log(mysqli_connect_error());
             $_SESSION['message'] = 'Unknown error';
-            header('Location: ', true);
+            header('Location: ./', true);
             exit();
         }
 
@@ -251,7 +246,7 @@ $method = $_SERVER['REQUEST_METHOD'];
         
         if (!$usernameInput || !$passwordInput) {
             $_SESSION['message'] = 'Invalid login';
-            header('Location: ', true);
+            header('Location: ./', true);
             exit();
         }
 
@@ -268,7 +263,7 @@ $method = $_SERVER['REQUEST_METHOD'];
             http_response_code(500);
             error_log(mysqli_connect_error());
             $_SESSION['message'] = 'Unknown error';
-            header('Location: ', true);
+            header('Location: ./', true);
             exit();
         }
 
@@ -276,7 +271,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
         if (!$id || !$hash || !password_verify($passwordInput, $hash)) {
             $_SESSION['message'] = 'Invalid username or password';
-            header('Location: ', true);
+            header('Location: ./', true);
             exit();
         }
 
@@ -286,7 +281,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
         $_SESSION['user_id'] = $id;
 
-        header('Location: ', true);
+        header('Location: ./', true);
         exit();
     else :
         http_response_code(405);
