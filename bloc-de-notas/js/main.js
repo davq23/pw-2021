@@ -205,14 +205,14 @@ document.getElementById('tab-sections').addEventListener('submit', function (eve
 
     var xhr = new XMLHttpRequest();
 
-    this.querySelector('input,textarea', function (input) {
+    this.querySelectorAll('input,textarea,button').forEach(function (input) {
         input.disabled = true;
     });
 
     var form = this;
 
     xhr.onload = function () {
-        form.querySelector('input,textarea', function (input) {
+        form.querySelectorAll('input,textarea,button').forEach(function (input) {
             input.disabled = false;
         });
 
