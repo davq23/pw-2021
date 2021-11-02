@@ -16,3 +16,7 @@ textarea
     color: red;
 }
 
+button:disabled {
+    background-color: gray;
+}
+
