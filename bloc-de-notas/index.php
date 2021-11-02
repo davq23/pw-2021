@@ -278,7 +278,11 @@ $method = $_SERVER['REQUEST_METHOD'];
             exit();
         }
 
-        mkdir(__DIR__."/workspace/user_$id");
+        $userDirectoryPath = __DIR__."/workspace/user_$id";
+
+        if (!file_exists($userDirectoryPath)) {
+            mkdir(__DIR__."/workspace/user_$id");
+        }
 
         session_regenerate_id(true);
 
