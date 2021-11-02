@@ -246,6 +246,7 @@ $method = $_SERVER['REQUEST_METHOD'];
         
         if (!$usernameInput || !$passwordInput) {
             $_SESSION['message'] = 'Invalid login';
+            mysqli_close($mysqli);
             header('Location: ./', true);
             exit();
         }
@@ -262,6 +263,7 @@ $method = $_SERVER['REQUEST_METHOD'];
         ) {
             http_response_code(500);
             error_log(mysqli_connect_error());
+            mysqli_close($mysqli);
             $_SESSION['message'] = 'Unknown error';
             header('Location: ./', true);
             exit();
@@ -271,6 +273,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
         if (!$id || !$hash || !password_verify($passwordInput, $hash)) {
             $_SESSION['message'] = 'Invalid username or password';
+            mysqli_close($mysqli);
             header('Location: ./', true);
             exit();
         }
