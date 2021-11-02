@@ -1,9 +1,9 @@
-<?php
+<?php 
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     exit();
 }
-
 
 require_once __DIR__ . '/auth.php';
 
@@ -25,20 +25,11 @@ if (!$dirnameRaw) {
 
 $dirname = filterSanitizePath($dirnameRaw);
 
-$directoryCount = substr_count($dirname, '/');
+error_log($dirname);
 
-if ($directoryCount > 3) {
-    http_response_code(507);
-    exit('Directory depth must be less than 3');
-}
-
-$buttonActivated = filter_input(INPUT_POST, 'make-dir');
-
-
-if (mkdir(__DIR__ . '/../workspace/user_' . $auth .'/'. $dirname) === false) {
+if (!rmdir(__DIR__ . '/../workspace/user_' . $auth .'/'. $dirname)) {
     http_response_code(500);
-    echo 'Error while writing directory';
-    exit();
+    exit('Non-empty or unexistent directory');
 }
 
-exit('Directory created');
+exit('Directory deleted');

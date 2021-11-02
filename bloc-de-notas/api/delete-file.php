@@ -6,6 +6,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST')
     exit();
 }
 
+require_once __DIR__ . '/auth.php';
+
+$auth = auth();
+
+if (!$auth) {
+    http_response_code(401);
+    exit();
+}
+
 $filenameRaw = filter_input(INPUT_POST, 'filename');
 
 if (!$filenameRaw)
@@ -18,7 +27,7 @@ require_once  __DIR__ .  '/../utils/functions.php';
 
 $filenameSanitized = filterSanitizePath(preg_replace('/\.([A-z0-9]+)$/', '', $filenameRaw));
 
-$filePath = __DIR__ . "/../workspace/$filenameSanitized.txt";
+$filePath = __DIR__ . "/../workspace/user_$auth/$filenameSanitized.txt";
 
 if (unlink($filePath) === false)
 {

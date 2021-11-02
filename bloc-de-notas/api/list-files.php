@@ -17,7 +17,6 @@ if (!$auth) {
 
 require_once __DIR__.'/../utils/functions.php';
 
-$dirs = rglob(__DIR__ . "/../workspace/user_$auth/*");
 
 function removeDir(string $path)
 {
@@ -27,13 +26,16 @@ function removeDir(string $path)
 
 function filterFiles(string $entryName) 
 {
-    return strpos($entryName, '.txt') === false;
+    return strpos($entryName, '.txt') !== false;
 }
 
-$dirsSanitized = array_map('removeDir', $dirs);
 
-$dirsSanitized = array_filter($dirsSanitized, 'filterFiles');
+$files = rglob(__DIR__ . "/../workspace/user_$auth/*");
+
+$filesSanitized = array_map('removeDir', $files);
+
+$filesSanitized = array_filter($filesSanitized, 'filterFiles');
        
 header('Content-Type: application/json');
 
-echo json_encode(array_values($dirsSanitized));
+echo json_encode(array_values($filesSanitized));
