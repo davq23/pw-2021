@@ -281,6 +281,8 @@ $method = $_SERVER['REQUEST_METHOD'];
 
         $_SESSION['user_id'] = $id;
 
+        mysqli_close($mysqli);
+
         header('Location: ./', true);
         exit();
     else :
