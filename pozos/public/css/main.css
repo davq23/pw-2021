@@ -1,0 +1,11 @@
+.fs-extra-large {
+    font-size: 500%;
+}
+
+body {
+    background-color: cadetblue;
+}
+
+.clocklet-container, .datepicker {
+    z-index: 1100 !important;
+}
