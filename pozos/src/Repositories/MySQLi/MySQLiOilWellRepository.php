@@ -15,6 +15,7 @@ use Repositories\OilWellRepository;
 class MySQLiOilWellRepository extends MySQLiRepository implements OilWellRepository
 {
 
+    /** {@inheritDoc} */
     public function findAllOilWells(): array {
         $oilWells = array();
 
@@ -27,6 +28,7 @@ class MySQLiOilWellRepository extends MySQLiRepository implements OilWellReposit
         return $oilWells;
     }
 
+    /** {@inheritDoc} */
     public function findById($id): OilWell {
         $oilWell = null;
 
@@ -51,6 +53,7 @@ class MySQLiOilWellRepository extends MySQLiRepository implements OilWellReposit
         return $oilWell;
     }
 
+    /** {@inheritDoc} */
     public function registerOilWell(OilWell $oilWell): OilWell {
         $statement = $this->mysqli()->prepare(
             'INSERT INTO oil_wells (name, depth, estimated_reserves) VALUES (?, ?, ?)'
@@ -70,6 +73,7 @@ class MySQLiOilWellRepository extends MySQLiRepository implements OilWellReposit
         return $oilWell;
     }
 
+    /** {@inheritDoc} */
     public function updateOilWell(OilWell $oilWell): OilWell {
         $statement = $this->mysqli()->prepare(
             'UPDATE oil_wells SET name = ?, depth = ?, estimated_reserves = ? WHERE id = ?'
@@ -88,6 +92,7 @@ class MySQLiOilWellRepository extends MySQLiRepository implements OilWellReposit
         return $oilWell;
     }
 
+    /** {@inheritDoc} */
     public function addMeasurement(OilWell $oilWell, Measurement $measurement): Measurement {
         $statement = $this->mysqli()->prepare(
             'INSERT INTO measurements (value, time, user_id, oil_well_id) VALUES (?, ?, ?, ?)'
@@ -108,21 +113,23 @@ class MySQLiOilWellRepository extends MySQLiRepository implements OilWellReposit
         return $measurement;
     }
 
-    public function deleteMeasurement(Measurement $measurement) {
+    /** {@inheritDoc} */
+    public function deleteMeasurement($id) {
         $statement = $this->mysqli()->prepare(
             'DELETE FROM measurements WHERE id = ?'
         );
 
-        $id = $measurement->getId();
-
         $statement->bind_param('s', $id);
 
-        $statement->execute();
+        if (!$statement->execute()) {
+            throw new Exception(mysqli_error($this->mysqli()));
+        }
     }
 
+    /** {@inheritDoc} */
     public function editMeasurement(Measurement $measurement): Measurement {
         $statement = $this->mysqli()->prepare(
-            'UPDATE measurements value = ?, time = ?, user_id = ?, oil_well_id = ? WHERE id = ?'
+            'UPDATE measurements SET value = ?, time = ?, user_id = ?, oil_well_id = ? WHERE id = ?'
         );
 
         $id = $measurement->getId();
@@ -138,6 +145,7 @@ class MySQLiOilWellRepository extends MySQLiRepository implements OilWellReposit
         return $measurement;
     }
 
+    /** {@inheritDoc} */
     public function findAllMeasurements(
         OilWell $oilWell,
         ?int $year = null,
@@ -159,6 +167,8 @@ class MySQLiOilWellRepository extends MySQLiRepository implements OilWellReposit
             $dateString = sprintf('%04d-%02d-%02d', $year, $month, $day);
             $sql .= " AND DATE_FORMAT(time, '%Y-%m-%d') = '{$dateString}'";
         }
+
+        $sql .= ' ORDER BY time';
 
         $result = $this->mysqli()->query($sql);
 
@@ -207,6 +217,7 @@ class MySQLiOilWellRepository extends MySQLiRepository implements OilWellReposit
         return $measurement;
     }
 
+    /** {@inheritDoc} */
     public function findMeasurementByTime(OilWell $oilWell, string $dateTime): Measurement {
         $measurement = null;
         $oilWellId = $oilWell->getId();
@@ -238,6 +249,19 @@ class MySQLiOilWellRepository extends MySQLiRepository implements OilWellReposit
         }
 
         return $measurement;
+    }
+
+    /** {@inheritDoc} */
+    public function deleteOilWell($id): void {
+        $statement = $this->mysqli()->prepare(
+            'DELETE FROM oil_wells WHERE id = ?'
+        );
+
+        $statement->bind_param('s', $id);
+
+        if (!$statement->execute()) {
+            throw new Exception(mysqli_error($this->mysqli()));
+        }
     }
 
 }

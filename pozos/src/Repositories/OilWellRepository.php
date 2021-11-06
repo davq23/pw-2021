@@ -7,7 +7,6 @@
 
 namespace Repositories;
 
-use DateTime;
 use Domains\Measurement;
 use Domains\OilWell;
 
@@ -49,6 +48,14 @@ interface OilWellRepository
      * @return OilWell
      */
     public function updateOilWell(OilWell $oilWell): OilWell;
+
+    /**
+     * Deletes oil well
+     *
+     * @param mixed $id
+     * @return void
+     */
+    public function deleteOilWell($id): void;
 
     /**
      *
@@ -100,7 +107,7 @@ interface OilWellRepository
 
     /**
      *
-     * @param Measurement $measurement
+     * @param mixed $id
      */
-    public function deleteMeasurement(Measurement $measurement);
+    public function deleteMeasurement($id);
 }
