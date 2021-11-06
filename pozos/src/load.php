@@ -37,11 +37,15 @@ $sessionManager = new DefaultSessionManager();
 
 $router->GET('(:empty)', PanelController::class, 'index');
 $router->GET('panel/(:empty)', PanelController::class, 'index');
+
 $router->POST('well/new', OilWellController::class, 'register');
 $router->POST('well/update/(:empty)', OilWellController::class, 'update');
+$router->POST('well/delete', OilWellController::class, 'delete');
 $router->GET('well/update/(:empty)', OilWellController::class, 'updateForm');
 $router->GET('well/new', OilWellController::class, 'registerForm');
+
 $router->GET('well/measurements/(:empty)', OilWellController::class, 'getMeasurements');
+$router->GET('well/measurements/edit', OilWellController::class, 'editMeasurementForm');
 $router->POST('well/measurements/add', OilWellController::class, 'addMeasurement');
 $router->POST('well/measurements/edit', OilWellController::class, 'editMeasurement');
 $router->POST('well/measurements/delete', OilWellController::class, 'deleteMeasurement');

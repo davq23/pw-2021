@@ -73,8 +73,10 @@ class OilWellController extends Controller
         ));
     }
 
-    public function register() {
+    public function register(): void {
         $this->auth($this->sessionManager);
+
+        $error = false;
 
         $oilWellArray = filter_input_array(INPUT_POST, array(
             'name' => FILTER_DEFAULT,
@@ -82,8 +84,10 @@ class OilWellController extends Controller
             'estimated_reserves' => FILTER_VALIDATE_FLOAT
             ), true);
 
-        if (!$oilWellArray)
-            return new JSONMessageView(400, 'Bad request');
+        if (!$oilWellArray) {
+            $this->sessionManager->setFlash('message-danger', 'Invalid oil well info');
+            $this->redirect('well/new', true);
+        }
 
         try {
             $oilWell = OilWell::fromArray($oilWellArray);
@@ -98,15 +102,19 @@ class OilWellController extends Controller
         } catch (InvalidDomainException $invalidDomainException) {
             $this->sessionManager->setFlash('message-danger', $invalidDomainException->getMessage());
             $this->sessionManager->setFlash('oil_well', $oilWellArray);
+
+            $error = true;
         } catch (\Exception $exception) {
             $this->sessionManager->setFlash('message-danger', 'Unknown error');
             $this->sessionManager->setFlash('oil_well', $oilWellArray);
+
+            $error = true;
         }
 
-        $this->redirect('well/new', true);
+        $this->redirect($error ? 'well/new' : 'panel', true);
     }
 
-    public function update() {
+    public function update(): void {
         $this->auth($this->sessionManager);
 
         $oilWellArray = filter_input_array(INPUT_POST, array(
@@ -116,11 +124,13 @@ class OilWellController extends Controller
             'estimated_reserves' => FILTER_VALIDATE_FLOAT
         ));
 
-        if (!$oilWellArray)
-            return new JSONMessageView(400, 'Bad request');
-
+        if (!$oilWellArray) {
+            $this->sessionManager->setFlash('message-danger', 'Invalid oil well info');
+            $this->redirect('panel', true);
+        }
 
         try {
+            $oldOilWell = $this->oilWellRepository->findById($oilWellArray['id']);
             $oilWell = OilWell::fromArray($oilWellArray);
             $oilWell->validate();
 
@@ -132,7 +142,41 @@ class OilWellController extends Controller
             );
         } catch (InvalidDomainException $invalidDomainException) {
             $this->sessionManager->setFlash('message-danger', $invalidDomainException->getMessage());
+        } catch (DomainNotFoundException $domainNotFoundException) {
+            $this->sessionManager->setFlash('message-danger', 'Unknown oil well id');
         } catch (\Exception $exception) {
+            $this->sessionManager->setFlash('message-danger', 'Unknown error');
+        }
+
+        $this->redirect('panel', true);
+    }
+
+    public function delete(): void {
+        $this->auth($this->sessionManager);
+
+        $oilWellArray = filter_input_array(INPUT_POST, array(
+            'id' => FILTER_DEFAULT
+            )
+        );
+
+        if (!$oilWellArray) {
+            $this->sessionManager->setFlash('message-danger', 'Invalid oil well info');
+            $this->redirect('panel', true);
+        }
+
+        try {
+            $oldOilWell = $this->oilWellRepository->findById($oilWellArray['id']);
+
+            $this->oilWellRepository->deleteOilWell($oldOilWell->getId());
+
+            $this->sessionManager->setFlash(
+                'message-success',
+                'Deleted well "' . $oldOilWell->getName() . '"'
+            );
+        } catch (DomainNotFoundException $domainNotFoundException) {
+            $this->sessionManager->setFlash('message-danger', 'Unknown oil well id');
+        } catch (Exception $ex) {
+            error_log($ex->getMessage());
             $this->sessionManager->setFlash('message-danger', 'Unknown error');
         }
 
@@ -184,30 +228,113 @@ class OilWellController extends Controller
         return new JSONDomainView('Measurement successfully added', $measurement);
     }
 
-    public function editMeasurement(): View {
-        $this->auth($this->sessionManager, true, self::AJAX_REQUEST);
+    public function deleteMeasurement(): void {
+        $this->auth($this->sessionManager);
 
-        $measurementArray = $this->getJsonBody();
+        $error = false;
+
+        $measurementArray = filter_input_array(INPUT_POST, array(
+            'id' => FILTER_DEFAULT
+        ));
+
+        if (!$measurementArray) {
+            $this->sessionManager->setFlash('message-danger', 'Invalid measurement');
+            $this->redirect('measurements/edit', true);
+        }
 
         try {
-            $oldMeasurement = $this->measurement->findById($measurementArray['id'] ?? null);
+            $oldMeasurement = $this->oilWellRepository->findMeasurementById($measurementArray['id'] ?? null);
+
+            $this->oilWellRepository->deleteMeasurement($oldMeasurement->getId());
+            $this->sessionManager->setFlash(
+                'message-success',
+                'Measurement to successfully deleted'
+            );
+        } catch (InvalidDomainException $invalidDomainException) {
+            $this->sessionManager->setFlash('message-danger', $invalidDomainException->getMessage());
+            $error = true;
+        } catch (DomainNotFoundException $domainNotFoundException) {
+            $this->sessionManager->setFlash('message-danger', 'Invalid measurement id');
+            $error = true;
+        } catch (Throwable $th) {
+            $this->sessionManager->setFlash('message-danger', 'Unknown error');
+            $error = true;
+        }
+
+        $this->redirect($error ? 'measurements/edit' : 'panel', true);
+    }
+
+    public function editMeasurement(): void {
+        $this->auth($this->sessionManager);
+
+        $error = false;
+
+        $measurementArray = filter_input_array(INPUT_POST, array(
+            'id' => FILTER_DEFAULT,
+            'value' => FILTER_VALIDATE_FLOAT,
+            'time' => FILTER_DEFAULT,
+            'date' => FILTER_DEFAULT
+        ));
+
+        if (!$measurementArray) {
+            $this->sessionManager->setFlash('message-danger', 'Invalid measurement');
+            $this->redirect('measurements/edit', true);
+        }
+
+        $measurementArray['time'] = sprintf(
+            '%s %s',
+            $measurementArray['date'],
+            $measurementArray['time']
+        );
+
+        try {
+            $oldMeasurement = $this->oilWellRepository->findMeasurementById($measurementArray['id'] ?? null);
             $measurement = Measurement::fromArray($measurementArray);
             $measurement->validate();
+            $measurement->setOilWellId($oldMeasurement->getOilWellId());
 
             $this->oilWellRepository->editMeasurement($measurement);
             $this->sessionManager->setFlash(
                 'message-success',
-                'Measurement to ' . $oilWell->getName() . ' successfully added'
+                'Measurement to successfully editted'
             );
         } catch (InvalidDomainException $invalidDomainException) {
-            return new JSONMessageView(422, $invalidDomainException->getMessage());
+            $this->sessionManager->setFlash('message-danger', $invalidDomainException->getMessage());
+            $error = true;
         } catch (DomainNotFoundException $domainNotFoundException) {
-            return new JSONMessageView(404, 'Invalid oil well id');
+            $this->sessionManager->setFlash('message-danger', 'Invalid measurement id');
+            $error = true;
         } catch (Throwable $th) {
-            return new JSONMessageView(500, 'Unknown error');
+            $this->sessionManager->setFlash('message-danger', 'Unknown error');
+            $error = true;
         }
 
-        return new JSONDomainView('Measurement successfully updated', $measurement);
+        $this->redirect($error ? 'measurements/edit' : 'panel', true);
+    }
+
+    public function editMeasurementForm(): View {
+        $userId = $this->auth($this->sessionManager);
+
+        $measurementId = filter_input(INPUT_GET, 'measurement');
+
+        $current_user = $this->userRepository->findById($userId);
+
+        try {
+            $measurement = $this->oilWellRepository->findMeasurementById($measurementId);
+            $oilWell = $this->oilWellRepository->findById($measurement->getOilWellId());
+        } catch (DomainNotFoundException $domainNotFoundException) {
+            $this->sessionManager->setFlash('message-danger', 'Invalid measurement id');
+            $this->redirect('panel');
+        }
+
+
+        return new PHPTemplateView('update-measurement.php', array(
+            'message-danger' => $this->sessionManager->getFlash('message-danger'),
+            'message-success' => $this->sessionManager->getFlash('message-success'),
+            'measurement' => $measurement,
+            'oil_well' => $oilWell,
+            'current_user' => $current_user
+        ));
     }
 
     public function getMeasurements(): View {
