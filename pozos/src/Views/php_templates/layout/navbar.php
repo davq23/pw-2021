@@ -8,14 +8,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="navId" role="tablist">
-                <?php if ($logged) : ?>
-                    <div class="nav-item">
-                        <a href="<?= BASE_URL . 'exams' ?>"
-                           class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/stats') !== false ? 'active' : '' ?>">
-                            <i class="bi bi-file-text-fill"></i> Stats
-                        </a>
-                    </div>
-                <?php else : ?>
+                <?php if (!$logged) : ?>
                     <li class="nav-item">
                         <a href="<?= BASE_URL . 'login' ?>"
                            class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/login') !== false ? 'active' : '' ?>">
