@@ -33,11 +33,12 @@ class Controller
         SessionManager $sessionManager,
         bool $logged = true,
         int $requestType = 0,
-        array $roles = array()) {
+        array $roles = array()
+    ) {
         $userId = $sessionManager->get('user_id');
 
         if ($logged && !$userId || !$logged && $userId) {
-            throw new UnauthorizedRequestException(BASE_URL . ($logged ? 'login' : 'panel'), $requestType);
+            throw new UnauthorizedRequestException($logged ? 'login' : 'panel', $requestType);
         }
 
         return $userId;
