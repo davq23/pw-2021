@@ -37,6 +37,5 @@ CREATE TABLE measurements (
 
 CREATE UNIQUE INDEX time_measurement_idx ON measurements(oil_well_id, time);
 
-DROP TABLE well_users;
 
 
