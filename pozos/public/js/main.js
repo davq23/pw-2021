@@ -15,6 +15,7 @@ document.addEventListener('readystatechange', function () {
                     new AutoNumeric(autoNumericElement, {
                         digitGroupSeparator: ".",
                         decimalCharacter: ",",
+                        leadingZero: 'allow',
                         suffixText: autoNumericElement.getAttribute('suffix'),
                         unformatOnSubmit: true
                     });
@@ -28,12 +29,12 @@ document.addEventListener('readystatechange', function () {
                         });
                 });
             });
-
-
             document.querySelectorAll('form.ajax-form')
                 .forEach(function (ajaxForms) {
+
                     ajaxForms.addEventListener('submit', function (event) {
                         event.preventDefault();
+
                         var formData = new FormData(this);
                         var object = formDataToObject(formData);
                         var form = this;
@@ -71,6 +72,8 @@ document.addEventListener('readystatechange', function () {
                 );
             break;
         case 'complete':
+
+
             document.querySelectorAll('.modal')
                 .forEach(function (modal) {
                     modal.addEventListener('hidden.bs.modal', function () {
@@ -97,45 +100,140 @@ document.addEventListener('readystatechange', function () {
                     data: {
                         datasets: [
                             {
-                                backgroundColor: "red",
                                 labels: [],
                                 data: [],
-                                pointColor: "red",
+                                pointColor: 'rgb(75, 192, 192)',
                                 fill: false,
                                 borderColor: 'rgb(75, 192, 192)',
-                                tension: 0.1
+                                tension: 0.1,
+                                borderWidth: 1
                             }
                         ]
+                    },
+                    options: {
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        var label = context.raw.pressure
+                                            + ' (' + context.raw.bar + ')';
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'day'
+                                }
+                            }
+                        },
+                        zone: "Venezuela/Caracas"
+                    }
+                });
+
+                document.getElementById('chart-panel').addEventListener('click', function (event) {
+                    var activePoint = chart.getElementsAtEventForMode(
+                        event,
+                        'nearest',
+                        {intersect: true},
+                        true
+                        );
+
+                    try {
+                        var id = chart.data.datasets[activePoint[0].datasetIndex]
+                            .data[activePoint[0].index].id;
+                        window.location = 'well/measurements/edit?measurement=' + id;
+                    } catch (error) {
+
                     }
 
+
                 });
+
+                var modalChart = document.getElementById('modalChart');
+
+                document.getElementById('modalChart').querySelector('form')
+                    .addEventListener('input', function () {
+                        if (this.timeout) {
+                            clearTimeout(this.timeout);
+                        }
+
+                        var url = modalChart.getAttribute('url');
+                        var form = this;
+
+                        this.timeout = setTimeout(function () {
+                            var xhr = new XMLHttpRequest();
+                            xhr.onload = function () {
+                                var result = JSON.parse(this.responseText);
+                                switch (this.status) {
+                                    case 200:
+                                        updateChartPanel(chart, result);
+                                        break;
+                                }
+                            };
+                            var formData = new FormData(form);
+
+                            var searchParams = new URLSearchParams(formData);
+
+                            xhr.open('GET', url + '?' + searchParams.toString());
+                            xhr.send();
+
+                        }, 1000);
+                    });
+
+                document.getElementById('modalChart')
+                    .addEventListener('hidden.bs.modal', function (event) {
+                        chart.data.datasets[0].data = [];
+                    });
+
                 document.getElementById('modalChart')
                     .addEventListener('show.bs.modal', function (event) {
                         var oilWell = JSON.parse(event.relatedTarget.getAttribute('data-bs-src'));
+                        this.querySelector('input[name="oil_well"]').value = oilWell.id;
+
                         var url = this.getAttribute('url');
-
                         var xhr = new XMLHttpRequest();
-
                         xhr.onload = function () {
                             var result = JSON.parse(this.responseText);
                             switch (this.status) {
                                 case 200:
-                                    chart.data.datasets[0].label = oilWell['name'];
-                                    chart.data.datasets[0].data = result.data.map(function (datum) {
-                                        return {value: datum.value, time: new Date(datum.time)};
-                                    });
-                                    chart.update();
+                                    chart.data.datasets[0].label = oilWell.name;
+                                    updateChartPanel(chart, result);
+                                    break;
+                                default:
+
+                                    break;
+                                case 500:
+
                                     break;
                             }
                         };
-
                         xhr.open('GET', url + '?oil_well=' + oilWell.id);
                         xhr.send();
                     });
             }
             break;
     }
-});
+}
+);
+
+function updateChartPanel(chart, data) {
+    chart.data.datasets[0].data = data.data.map(function (datum) {
+        var time = datum.time.replace(' ', 'T') + 'Z';
+        return {
+            id: datum.id,
+            y: datum.value,
+            x: Date.parse(datum.time),
+            pressure: datum.value + ' psi',
+            bar: datum.bar + ' bar'
+        };
+    });
+    chart.update();
+}
+
 function formDataToObject(formData) {
     var object = {};
     formData.forEach(function (value, key) {
