@@ -66,7 +66,7 @@ class OilWell implements Domain
     }
 
     //put your code here
-    public function jsonSerialize(): mixed {
+    public function jsonSerialize() {
         return array(
             'id' => $this->id,
             'name' => $this->name,

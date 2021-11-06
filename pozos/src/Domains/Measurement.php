@@ -81,7 +81,7 @@ class Measurement implements Domain
         $this->time = $time;
     }
 
-    public function jsonSerialize(): mixed {
+    public function jsonSerialize() {
         return array(
             'id' => $this->id,
             'oil_well_id' => $this->oilWellId,

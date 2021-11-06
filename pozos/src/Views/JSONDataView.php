@@ -7,12 +7,14 @@
 
 namespace Views;
 
+use JsonSerializable;
+
 /**
  * Description of JSONDataView
  *
  * @author davido
  */
-class JSONDataView extends JSONView implements \JsonSerializable
+class JSONDataView extends JSONView implements JsonSerializable
 {
     private int $resultCount;
     private array $data;
@@ -22,7 +24,7 @@ class JSONDataView extends JSONView implements \JsonSerializable
         $this->resultCount = count($data);
     }
 
-    public function jsonSerialize(): mixed {
+    public function jsonSerialize() {
         return array(
             'data' => $this->data,
             'result_count' => $this->resultCount

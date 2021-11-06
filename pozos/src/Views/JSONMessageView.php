@@ -22,7 +22,7 @@ class JSONMessageView extends JSONView
         $this->message = $message;
     }
 
-    public function jsonSerialize(): mixed {
+    public function jsonSerialize() {
         return array(
             'code' => $this->code,
             'message' => $this->message

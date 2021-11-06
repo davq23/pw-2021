@@ -24,7 +24,7 @@ class JSONDomainView extends JSONView
         $this->domain = $domain;
     }
 
-    public function jsonSerialize(): mixed {
+    public function jsonSerialize() {
         return array(
             'message' => $this->message,
             'domain' => $this->domain

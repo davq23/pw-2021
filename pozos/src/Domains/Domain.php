@@ -3,9 +3,11 @@
 namespace Domains;
 
 use Domains\Exceptions\InvalidDomainException;
+use JsonSerializable;
 
-interface Domain extends \JsonSerializable
+interface Domain extends JsonSerializable
 {
+
     /**
      * Checks the validity of the domain
      *
