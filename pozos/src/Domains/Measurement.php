@@ -53,6 +53,10 @@ class Measurement implements Domain
         return $this->value;
     }
 
+    public function getValueBar(): float {
+        return ($this->value * 0.0689476) / 1.00000039262;
+    }
+
     public function getOilWellId() {
         return $this->oilWellId;
     }
@@ -74,7 +78,7 @@ class Measurement implements Domain
     }
 
     public function setTime(string $time): void {
-        $this->time = $date;
+        $this->time = $time;
     }
 
     public function jsonSerialize(): mixed {
@@ -82,7 +86,8 @@ class Measurement implements Domain
             'id' => $this->id,
             'oil_well_id' => $this->oilWellId,
             'value' => $this->value,
-            'date' => $this->time
+            'time' => $this->time,
+            'bar' => $this->getValueBar()
         );
     }
 
