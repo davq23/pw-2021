@@ -9,3 +9,7 @@ body {
 .clocklet-container, .datepicker {
     z-index: 1100 !important;
 }
+
+.min-vw-75 {
+    min-width: 75vw !important;
+}
