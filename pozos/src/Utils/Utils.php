@@ -13,7 +13,7 @@ class Utils
 {
 
     /**
-     * Utility for knowing if a string ends with a substring
+     * Utility for knowing if a string ends with a sub-string
      *
      * @param string $haystack
      * @param string $needle
