@@ -35,7 +35,14 @@ document.addEventListener('readystatechange', function () {
                     ajaxForms.addEventListener('submit', function (event) {
                         event.preventDefault();
 
+
+
                         var formData = new FormData(this);
+
+                        ajaxForms.querySelectorAll('input,button').forEach(function (input) {
+                            input.disabled = true;
+                        });
+
                         var object = formDataToObject(formData);
                         var form = this;
                         var alert = form.querySelector('.alert');
@@ -44,6 +51,10 @@ document.addEventListener('readystatechange', function () {
                         alert.classList.add('invisible');
                         var xhr = new XMLHttpRequest();
                         xhr.onload = function () {
+                            ajaxForms.querySelectorAll('input,button').forEach(function (input) {
+                                input.disabled = false;
+                            });
+
                             var data = JSON.parse(this.responseText);
                             switch (this.status) {
                                 case 200:
