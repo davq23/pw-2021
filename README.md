@@ -14,4 +14,5 @@
 <h3>Segundo Corte</h3>
 <ul>
     <li><a href="https://github.com/davq23/pw-2021/tree/master/bloc-de-notas">Aplicación bloc de notas</a></li>
+    <li><a href="https://github.com/davq23/pw-2021/tree/master/pozos">Aplicación web en PHP para la toma de mediciones de manómetros de pozos petroleros</a></li>
 </ul>
