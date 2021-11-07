@@ -33,7 +33,15 @@ $dbConnection = new MySQLiDBConnection($mysqli);
  */
 
 $router = new DefaultRouter();
-$sessionManager = new DefaultSessionManager();
+$sessionManager = new DefaultSessionManager(
+    'SESSION_ID',
+    900,
+    'strict',
+    $_SERVER['HTTP_HOST'],
+    '/',
+    false,
+    true
+);
 
 $router->GET('(:empty)', PanelController::class, 'index');
 $router->GET('panel/(:empty)', PanelController::class, 'index');

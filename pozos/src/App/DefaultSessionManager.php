@@ -13,10 +13,30 @@ namespace App;
 class DefaultSessionManager implements SessionManager
 {
 
-    public function __construct() {
+    public function __construct(
+        string $sessionName,
+        int $maxLifeTime = 0,
+        string $samesite = 'lax',
+        string $domain = '',
+        string $path = '/',
+        bool $secure = false,
+        bool $httpOnly = false
+    ) {
+        session_name($sessionName);
+
+        session_set_cookie_params([
+            'lifetime' => $maxLifeTime,
+            'path' => $path,
+            'domain' => $domain,
+            'secure' => $secure,
+            'httponly' => $httpOnly,
+            'samesite' => $samesite
+        ]);
+
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
+        $this->path = $path;
     }
 
     public function __destruct() {
