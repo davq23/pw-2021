@@ -21,7 +21,7 @@ use Domains\OilWell;
                 <?php require_once 'layout/message-danger-success.php'; ?>
             </div>
             <div class="row">
-                <div class="col">
+                <div class="col table-responsive">
                     <table class="table">
                         <thead>
                             <tr class="text-center">
