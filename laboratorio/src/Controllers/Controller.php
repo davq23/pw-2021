@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers;
 
 use App\SessionManager;
@@ -12,8 +13,7 @@ class Controller
      * Gets JSON body from request
      * @return array|false
      */
-    public function getJsonBody()
-    {
+    public function getJsonBody() {
         return json_decode(file_get_contents('php://input'), true);
     }
 
@@ -21,9 +21,8 @@ class Controller
      * @param string $url
      * @param bool $replace
      */
-    public function redirect(string $url, bool $replace = false)
-    {
-        header("Location: $url", $replace);
+    public function redirect(string $url, bool $replace = false) {
+        header("Location:" . BASE_URL . "$url", $replace);
         exit();
     }
 
@@ -31,16 +30,23 @@ class Controller
      * @throws UnauthorizedRequestException
      */
     public function auth(
-        SessionManager $sessionManager, 
-        bool $logged = true, 
+        SessionManager $sessionManager,
+        bool $logged = true,
         int $requestType = 0,
-        array $roles = array()) {
+        array $roles = array()
+    ) {
         $userId = $sessionManager->get('user_id');
+        $role = $sessionManager->get('user_role');
 
         if ($logged && !$userId || !$logged && $userId) {
-            throw new UnauthorizedRequestException(BASE_URL.($logged ? 'login' : 'panel'), $requestType);
+            throw new UnauthorizedRequestException($logged ? 'login' : 'panel', $requestType);
+        }
+
+        if (count($roles) > 0 && !in_array($role, $roles)) {
+            throw new UnauthorizedRequestException('panel', $requestType);
         }
 
         return $userId;
     }
+
 }
