@@ -1,4 +1,5 @@
 <?php
+
 namespace App;
 
 use App\Exceptions\UnauthorizedRequestException;
@@ -30,7 +31,7 @@ class App
         DBConnection $dbConnection,
         SessionManager $sessionManager
     ) {
-        $this->router = $router;        
+        $this->router = $router;
         $this->dbConnection = $dbConnection;
         $this->sessionManager = $sessionManager;
 
@@ -38,8 +39,7 @@ class App
         $this->injectables[get_class($sessionManager)] = $sessionManager;
     }
 
-    public function __destruct()
-    {
+    public function __destruct() {
         $this->dbConnection = null;
         $this->injectables = null;
         $this->router = null;
@@ -91,8 +91,7 @@ class App
      * @param string $className
      * @return string|null
      */
-    private function getImplementationTypeName(string $className): ?string
-    {
+    private function getImplementationTypeName(string $className): ?string {
         if (!interface_exists($className)) {
             return null;
         }
@@ -118,37 +117,49 @@ class App
      * @throws ReflectionException
      * @throws Exception
      */
-    public function injectClass(string $className)
-    {
+    public function injectClass(string $className, ...$parametersGiven) {
         $params = array();
         $reflection = new ReflectionClass($className);
-        $parameters = $reflection->getConstructor()->getParameters();
 
-        foreach ($parameters as $parameter) {
-            if ($type = $parameter->getType()) {
-                $classInstance = null;
-                $typeName = $type->getName();
+        if (count($parametersGiven) === 0) {
+            $constructor = $reflection->getConstructor();
 
-                foreach ($this->injectables as $injectable) {
-                    if ($injectable instanceof $typeName) {
-                        $classInstance = $injectable;
-                        break;
+            $parameters = $constructor ? $constructor->getParameters() : array();
+
+            foreach ($parameters as $parameter) {
+                $type = $parameter->getType();
+
+                if ($type) {
+                    $classInstance = null;
+                    $typeName = $type->getName();
+
+                    foreach ($this->injectables as $injectable) {
+                        if ($injectable instanceof $typeName) {
+                            $classInstance = $injectable;
+                            break;
+                        }
                     }
-                }
-                if (is_null($classInstance)) {
-                    $typeName = $this->getImplementationTypeName($typeName) ?? $typeName;
-                    $classInstance = $this->injectClass($typeName);
 
-                    $injectables[$typeName] = $classInstance;
-                }
+                    if (!$classInstance) {
+                        $typeName = $this->getImplementationTypeName($typeName) ?? $typeName;
+                        $classInstance = $this->injectClass($typeName);
 
-                $params[] = $classInstance;
-            } else {
-                throw new \Exception('All injectable parameters must be classes or interfaces');
+                        $injectables[$typeName] = $classInstance;
+                    }
+
+                    $params[] = $classInstance;
+                } else {
+                    throw new \Exception('All injectable parameters must be classes or interfaces');
+                }
             }
+
+            return new $className(...$params);
         }
 
-        return new $className(...$params);
+        $classInstance = new $className(...$parametersGiven);
+        $this->injectables[$className] = $classInstance;
+
+        return $classInstance;
     }
 
     /**
@@ -156,11 +167,10 @@ class App
      *
      * @throws ReflectionException
      */
-    public function run(): void
-    {
+    public function run(): void {
         $controllerClassMethodArray = $this->router->run();
 
-        if (is_null($controllerClassMethodArray)) {
+        if (!$controllerClassMethodArray) {
             http_response_code(404);
             return;
         }
@@ -175,4 +185,5 @@ class App
             echo $result;
         }
     }
+
 }
