@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers;
 
 use App\SessionManager;
@@ -15,8 +16,8 @@ class ExamController extends Controller
     private UserRepository $userRepository;
 
     public function __construct(
-        ExamRepository $examRepository, 
-        SessionManager $sessionManager, 
+        ExamRepository $examRepository,
+        SessionManager $sessionManager,
         UserRepository $userRepository
     ) {
         $this->examRepository = $examRepository;
@@ -27,16 +28,16 @@ class ExamController extends Controller
     /**
      * @throws InvalidViewException
      */
-    public function index(): View
-    {
+    public function index(): View {
         $userId = $this->auth($this->sessionManager);
 
-        $exams = $this->examRepository->fetchAll(100, 0);
         $currentUser = $this->userRepository->findById($userId);
-        
+        $exams = $this->examRepository->fetchAllByUserId(20, 0, $userId);
+
         return new PHPTemplateView('exams.php', array(
             'exams' => $exams,
             'current_user' => $currentUser
         ));
     }
+
 }
