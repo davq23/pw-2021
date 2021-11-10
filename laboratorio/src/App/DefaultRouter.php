@@ -19,13 +19,11 @@ class DefaultRouter implements Router
         '(:empty)' => 'Utils\\RouteRules::isEmpty'
     ];
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->routes = array();
     }
 
-    public function server(string $name, $default = null)
-    {
+    public function server(string $name, $default = null) {
         return $_SERVER[$name] ?? $default;
     }
 
@@ -37,27 +35,23 @@ class DefaultRouter implements Router
      * @param array $args
      * @return bool
      */
-    public function checkForRules(array $currentRoute, string &$currentPart, array &$args): bool
-    {
+    public function checkForRules(array $currentRoute, string &$currentPart, array &$args): bool {
         $ok = false;
         $rule = '';
 
         // Check for possible rules
         $patternRules = array_intersect_key($currentRoute, $this->rules);
 
-        if (count($patternRules) > 0) 
-        {
-            foreach ($patternRules as $patternRule => $val) 
-            {
-                $ok = call_user_func($this->rules[$patternRule], $currentPart); 
+        if (count($patternRules) > 0) {
+            foreach ($patternRules as $patternRule => $val) {
+                $ok = call_user_func($this->rules[$patternRule], $currentPart);
 
-                if ($ok) 
-                {
+                if ($ok) {
                     $rule = $patternRule;
                     break;
                 }
             }
-        } 
+        }
 
         $args[] = $currentPart;
         $currentPart = $rule;
@@ -71,8 +65,7 @@ class DefaultRouter implements Router
      * @param string $path
      * @return string
      */
-    private function stripQueryString(string $path): string
-    {
+    private function stripQueryString(string $path): string {
         // Strip base URL fragment and query string
         $path = str_replace($_ENV['BASE_URL_PATH_FRAGMENT'] ?? '/pw-2021/laboratorio/public/', '', $path);
         $path = str_replace('?' . $this->server('QUERY_STRING'), '', $path);
@@ -86,8 +79,7 @@ class DefaultRouter implements Router
      * @param string $name
      * @param array $params
      */
-    public function __call(string $name, array $params)
-    {
+    public function __call(string $name, array $params) {
         $name = strtoupper($name);
 
         if (!isset($this->routes[$name])) {
@@ -143,8 +135,7 @@ class DefaultRouter implements Router
      *
      * @return array|null
      */
-    public function run(): ?array
-    {
+    public function run(): ?array {
         $path = $this->stripQueryString($this->server('REQUEST_URI'));
 
         // Add / at the end of all paths
@@ -192,4 +183,5 @@ class DefaultRouter implements Router
         // Route not found
         return null;
     }
+
 }
