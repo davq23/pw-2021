@@ -1,7 +1,8 @@
 <?php
+
 namespace Controllers;
 
-use App\Exceptions\UnauthorizedRequestException;
+use App\SecretKeyManager;
 use App\SessionManager;
 use Controllers\Exceptions\BadRequestException;
 use Domains\Exceptions\InvalidDomainException;
@@ -9,22 +10,26 @@ use Domains\User;
 use Exception;
 use Repositories\Exceptions\DomainNotFoundException;
 use Repositories\UserRepository;
-use Views\Exceptions\InvalidViewException;
 use Views\PHPTemplateView;
+use Views\View;
 
 class SignupController extends Controller
 {
     private SessionManager $sessionManager;
     private UserRepository $userRepository;
+    private \App\SecretKeyManager $secretKeyManager;
 
-    public function __construct(UserRepository $userRepository, SessionManager $sessionManager)
-    {
+    public function __construct(
+        UserRepository $userRepository,
+        SessionManager $sessionManager,
+        SecretKeyManager $secretKeyManager
+    ) {
         $this->sessionManager = $sessionManager;
         $this->userRepository = $userRepository;
+        $this->secretKeyManager = $secretKeyManager;
     }
 
-    public function signupForm()
-    {
+    public function signupForm(): View {
         $this->auth($this->sessionManager, false);
 
         $message = $this->sessionManager->getFlash('message');
@@ -32,62 +37,87 @@ class SignupController extends Controller
 
         return new PHPTemplateView('signup.php', array(
             'message' => $message,
-            'user_array' => $userArray
+            'user_array' => $userArray,
+            'is_secret_doctor_form' => false
         ));
     }
 
-    public function postSignupForm()
-    {
+    public function signupDoctorForm(): View {
         $this->auth($this->sessionManager, false);
 
+        $message = $this->sessionManager->getFlash('message');
+        $userArray = $this->sessionManager->getFlash('user_array');
+
+        return new PHPTemplateView('signup.php', array(
+            'message' => $message,
+            $user_array => $userArray,
+            'is_secret_doctor_form' => true
+        ));
+    }
+
+    private function verifySecretKey(string $secretKey, User $user): void {
+        $valid = $this->secretKeyManager->verifyKey($secretKey);
+
+        if (!$valid) {
+            throw new BadRequestException('Invalid secret key');
+        }
+
+        $user->setUserRole(User::USER_ROLE_DOCTOR);
+    }
+
+    public function postSignupForm() {
         $errorMessage = null;
-        $userArray = filter_input_array(
-            INPUT_POST, 
-            array(
-                'username' => FILTER_DEFAULT,
-                'email' => FILTER_VALIDATE_EMAIL,
-                'password' => FILTER_DEFAULT
-            )
-        );
-        
+        $redirectRoute = 'signup';
+
+        $this->auth($this->sessionManager, false);
+
         try {
-            User::fromArray($userArray)->validate();
+            $user = User::fromArray($_POST);
+
+            if (isset($_POST['secret_doctor_key'])) {
+                $redirectRoute = 'doctors/signup';
+                $this->verifySecretKey($_POST['secret_doctor_key'], $user);
+                $user->setUserRole(User::USER_ROLE_DOCTOR);
+            } else {
+                $user->setUserRole(User::USER_ROLE_PATIENT);
+            }
+
+            $user->validate();
 
             try {
-                $this->userRepository->findByUsername($userArray['username']);
+                $this->userRepository->findByUsername($user->getUsername());
                 throw new BadRequestException('Username is alredy taken');
             } catch (DomainNotFoundException $th) {
                 try {
-                    $this->userRepository->findByEmail($userArray['email']);
+                    $this->userRepository->findByEmail($user->getEmail());
                     throw new BadRequestException('Email is alredy taken');
+                } catch (DomainNotFoundException $th) {
 
-                } catch (DomainNotFoundException $th) {}
+                }
             }
-            
-            $user = new User(null, $userArray['email'], $userArray['username'], $userArray['password']);
-            $user->validate();
             $user->hashPassword();
 
             $this->userRepository->registerUser($user);
-            
         } catch (BadRequestException $badRequestException) {
             $errorMessage = $badRequestException->getMessage();
         } catch (InvalidDomainException $invalidDomainException) {
             $errorMessage = $invalidDomainException->getMessage();
         } catch (Exception $exception) {
-            $errorMessage = 'Error desconocido';
+            $errorMessage = 'Unknown error';
         }
 
-        if (isset($errorMessage)) {
+        if (!$errorMessage) {
+            $this->sessionManager->regenerateId(true);
+            $this->sessionManager->add('user_id', $user->getId());
+            $this->sessionManager->add('user_role', $user->getUserRole());
+            $redirectRoute = 'panel';
+        } else {
             $this->sessionManager->setFlash('message', $errorMessage);
-            $this->sessionManager->setFlash('user_array', $userArray);
-
-            $this->redirect('signup', true);
+            $this->sessionManager->setFlash('user_array', $_POST);
         }
 
-        $this->sessionManager->regenerateId(true);
-        $this->sessionManager->add('user_id', $user->getId());
 
-        $this->redirect('panel', true);
+        $this->redirect($redirectRoute, true);
     }
+
 }
