@@ -6,6 +6,7 @@ use Domains\Exam;
 
 interface ExamRepository
 {
+
     /**
      * Fetch all exams
      *
@@ -16,12 +17,22 @@ interface ExamRepository
     public function fetchAll(int $limit, int $offset): array;
 
     /**
+     * Fetch all exams by user ID
+     *
+     * @param int $limit
+     * @param int $offset
+     * @param type $userId
+     * @return array
+     */
+    public function fetchAllByUserId(int $limit, int $offset, $userId): array;
+
+    /**
      * Register exam
-     * 
+     *
      * @param Exam $exam
      * @return Exam
      */
-    public function registerExam(Exam  $exam): Exam;
+    public function registerExam(Exam $exam): Exam;
 
     /**
      * Get exam count by user ID
@@ -29,5 +40,5 @@ interface ExamRepository
      * @param mixed $userId
      * @return integer
      */
-    public function getExamCountByUserId($userId): int; 
+    public function getExamCountByUserId($userId): int;
 }
