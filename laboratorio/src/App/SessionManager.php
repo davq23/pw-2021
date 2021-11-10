@@ -2,6 +2,10 @@
 
 namespace App;
 
+/**
+ * Manages App sessions
+ *
+ */
 interface SessionManager
 {
     public const FLASH_KEY = '_____FLASH_____';
