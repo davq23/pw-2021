@@ -15,8 +15,7 @@ class LoginController extends Controller
     private SessionManager $sessionManager;
     private UserRepository $userRepository;
 
-    public function __construct(UserRepository $userRepository, SessionManager $sessionManager)
-    {
+    public function __construct(UserRepository $userRepository, SessionManager $sessionManager) {
         $this->sessionManager = $sessionManager;
         $this->userRepository = $userRepository;
     }
@@ -25,8 +24,7 @@ class LoginController extends Controller
      * @throws UnauthorizedRequestException
      * @throws InvalidViewException
      */
-    public function loginForm(): PHPTemplateView
-    {
+    public function loginForm(): PHPTemplateView {
         $this->auth($this->sessionManager, false);
 
         $message = $this->sessionManager->getFlash('message');
@@ -41,13 +39,12 @@ class LoginController extends Controller
     /**
      * @throws UnauthorizedRequestException|BadRequestException
      */
-    public function postLoginForm(): void
-    {
+    public function postLoginForm(): void {
         $this->auth($this->sessionManager, false);
-        
+
         $user = null;
-        $userArray = filter_input_array(
-            INPUT_POST, 
+        $userArray = \filter_input_array(
+            INPUT_POST,
             array(
                 'username-email' => FILTER_DEFAULT,
                 'password' => FILTER_DEFAULT
@@ -65,7 +62,7 @@ class LoginController extends Controller
                 throw new DomainNotFoundException();
             }
         } catch (DomainNotFoundException $domainNotFoundException) {
-            $this->sessionManager->setFlash('message',  'Invalid username or password');
+            $this->sessionManager->setFlash('message', 'Invalid username or password');
             $this->sessionManager->setFlash('user_array', $userArray);
 
             $this->redirect('login', true);
@@ -73,16 +70,17 @@ class LoginController extends Controller
 
         $this->sessionManager->regenerateId(true);
         $this->sessionManager->add('user_id', $user->getId());
+        $this->sessionManager->add('user_role', $user->getUserRole());
 
         $this->redirect('panel', true);
     }
 
-    public function logout()
-    {
+    public function logout() {
         $this->auth($this->sessionManager);
 
         $this->sessionManager->destroy();
 
         $this->redirect('login', true);
     }
+
 }
