@@ -45,7 +45,7 @@ class ExamReport extends tFPDF implements Report
 
     public function Output($dest = '', $name = '', $isUTF8 = false) {
         $this->Details();
-        parent::Output($dest, $name, $isUTF8);
+        return parent::Output($dest, $name, $isUTF8);
     }
 
 }
