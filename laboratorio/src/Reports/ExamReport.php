@@ -43,4 +43,9 @@ class ExamReport extends tFPDF implements Report
         $this->MultiCell(160, 25, $this->exam->getResults());
     }
 
+    public function Output($dest = '', $name = '', $isUTF8 = false) {
+        $this->Details();
+        parent::Output($dest, $name, $isUTF8);
+    }
+
 }
