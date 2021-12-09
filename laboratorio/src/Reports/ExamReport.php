@@ -23,6 +23,8 @@ class ExamReport extends tFPDF implements Report
     ) {
         parent::__construct($orientation, $unit, $size);
 
+        $this->SetFont('Arial', '', 12);
+
         $this->exam = $exam;
     }
 
