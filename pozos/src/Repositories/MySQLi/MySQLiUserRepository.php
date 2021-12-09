@@ -15,16 +15,17 @@ class MySQLiUserRepository extends MySQLiRepository implements UserRepository
         $username = null;
         $email = null;
         $password = null;
+        $role = null;
 
-        $statement = $this->mysqli()->prepare('SELECT username, email, password FROM well_users WHERE id = ? LIMIT 1');
+        $statement = $this->mysqli()->prepare('SELECT username, email, password, user_role FROM users WHERE id = ? LIMIT 1');
         $statement->bind_param('s', $id);
 
-        $statement->bind_result($username, $email, $password);
+        $statement->bind_result($username, $email, $password, $role);
 
         $statement->execute();
 
         while ($statement->fetch()) {
-            $user = new User($id, $email, $username, $password);
+            $user = new User($id, $email, $username, $password, $role);
         }
 
         if (is_null($user)) {
@@ -66,7 +67,7 @@ class MySQLiUserRepository extends MySQLiRepository implements UserRepository
         $email = null;
         $password = null;
 
-        $statement = $this->mysqli()->prepare('SELECT * FROM well_users WHERE username = ? LIMIT 1');
+        $statement = $this->mysqli()->prepare('SELECT * FROM users WHERE username = ? LIMIT 1');
         $statement->bind_param('s', $username);
 
         $statement->bind_result($id, $username, $email, $password);
@@ -87,7 +88,7 @@ class MySQLiUserRepository extends MySQLiRepository implements UserRepository
     /** {@inheritDoc} */
     public function registerUser(User $user): User {
         $statement = $this->mysqli()->prepare(
-            'INSERT INTO well_users (email, username, password) VALUES (?, ?, ?)'
+            'INSERT INTO users (email, username, password) VALUES (?, ?, ?)'
         );
 
         $username = $user->getUsername();

@@ -3,7 +3,7 @@
 namespace Repositories;
 
 use Domains\Doctor;
-use Domains\Patient;
+use Domains\Nurse;
 use Repositories\Exceptions\DomainNotFoundException;
 
 /**
@@ -26,7 +26,7 @@ interface DoctorRepository
      * Fetches one doctor by user_id
      *
      * @param $userId
-     * @return Patient
+     * @return Nurse
      */
     public function findByUserId($userId): Doctor;
 
@@ -46,4 +46,10 @@ interface DoctorRepository
      * @return Doctor
      */
     public function updateDoctor($doctorId, Doctor $doctor): Doctor;
+
+    /**
+     * Fetches all patients
+     *
+     */
+    public function fetchAll(): array;
 }

@@ -17,7 +17,7 @@ class SignupController extends Controller
 {
     private SessionManager $sessionManager;
     private UserRepository $userRepository;
-    private \App\SecretKeyManager $secretKeyManager;
+    private SecretKeyManager $secretKeyManager;
 
     public function __construct(
         UserRepository $userRepository,
@@ -76,10 +76,9 @@ class SignupController extends Controller
 
             if (isset($_POST['secret_doctor_key'])) {
                 $redirectRoute = 'doctors/signup';
-                $this->verifySecretKey($_POST['secret_doctor_key'], $user);
                 $user->setUserRole(User::USER_ROLE_DOCTOR);
             } else {
-                $user->setUserRole(User::USER_ROLE_PATIENT);
+                $user->setUserRole(User::USER_ROLE_NURSE);
             }
 
             $user->validate();

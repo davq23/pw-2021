@@ -9,9 +9,11 @@ use App\DefaultSessionManager;
 use Controllers\DoctorController;
 use Controllers\ExamController;
 use Controllers\LoginController;
+use Controllers\NurseController;
 use Controllers\PanelController;
 use Controllers\PatientController;
 use Controllers\SignupController;
+use Controllers\TestController;
 use Database\MySQLiDBConnection;
 
 ini_set("log_errors", 1);
@@ -42,11 +44,11 @@ $sessionManager = new DefaultSessionManager('LAB_SESSID');
 $router->GET('(:empty)', PanelController::class, 'index');
 $router->GET('panel/(:empty)', PanelController::class, 'index');
 
-// Patient routes
-$router->GET('patients/(:empty)', PatientController::class, 'index');
-$router->POST('patients/(:empty)', PatientController::class, 'register');
-$router->POST('patients/update', PatientController::class, 'update');
-$router->GET('patients/register', PatientController::class, 'registerForm');
+// Nurse routes
+$router->GET('nurses/(:empty)', NurseController::class, 'index');
+$router->POST('nurses/(:empty)', NurseController::class, 'register');
+$router->POST('nurses/update', NurseController::class, 'update');
+$router->GET('nurses/register', NurseController::class, 'registerForm');
 
 // Doctor routes
 $router->GET('doctors/register/(:empty)', DoctorController::class, 'registerForm');
@@ -55,6 +57,12 @@ $router->POST('doctors/update', DoctorController::class, 'update');
 
 // Exam routes
 $router->GET('exams/(:empty)', ExamController::class, 'index');
+$router->GET('exams/new/(:empty)', ExamController::class, 'registerForm');
+$router->GET('exams/report/(:empty)', ExamController::class, 'getReport');
+$router->GET('exams/results/(:empty)', ExamController::class, 'resultsForm');
+$router->GET('exams/results/send/(:empty)', ExamController::class, 'mailExamPDF');
+$router->POST('exams/results/(:empty)', ExamController::class, 'registerResults');
+$router->POST('exams/new/(:empty)', ExamController::class, 'register');
 
 // Session control
 $router->GET('login/(:empty)', LoginController::class, 'loginForm');
@@ -64,7 +72,15 @@ $router->GET('signup/(:empty)', SignupController::class, 'signupForm');
 $router->GET('doctors/signup', SignupController::class, 'signupDoctorForm');
 $router->POST('signup/(:empty)', SignupController::class, 'postsignupForm');
 
+// Patient routes
+$router->GET('patients/new', PatientController::class, 'registerForm');
+$router->POST('patients/new', PatientController::class, 'register');
+
+$router->GET('test/pdf', TestController::class, 'testReport');
+
 $app = new App($router, $dbConnection, $sessionManager);
+
+define('LAB_EMAIL', 'admin@davidquinterogranadillo.site');
 
 $app->injectClass(
     DefaultSecretKeyManager::class,

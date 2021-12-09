@@ -9,6 +9,7 @@ use Domains\Exceptions\InvalidDomainException;
 use Domains\User;
 use Repositories\DoctorRepository;
 use Repositories\Exceptions\DomainNotFoundException;
+use Repositories\UserRepository;
 use Views\PHPTemplateView;
 use Views\View;
 
@@ -21,13 +22,16 @@ class DoctorController extends Controller
 {
     private SessionManager $sessionManager;
     private DoctorRepository $doctorRepository;
+    private UserRepository $userRepository;
 
     public function __construct(
         SessionManager $sessionManager,
-        DoctorRepository $doctorRepository
+        DoctorRepository $doctorRepository,
+        UserRepository $userRepository
     ) {
         $this->sessionManager = $sessionManager;
         $this->doctorRepository = $doctorRepository;
+        $this->userRepository = $userRepository;
     }
 
     public function register() {
@@ -50,6 +54,8 @@ class DoctorController extends Controller
 
             $doctor = Doctor::fromArray($_POST);
             $doctor->validate();
+
+            $doctor->setUserId($userId);
 
             $doctor = $this->doctorRepository->registerDoctor($doctor);
 
@@ -80,6 +86,7 @@ class DoctorController extends Controller
         $doctor = null;
 
         try {
+            $user = $this->userRepository->findById($userId);
             $doctor = $this->doctorRepository->findByUserId($userId);
         } catch (DomainNotFoundException $domainNotFoundException) {
 
@@ -88,6 +95,7 @@ class DoctorController extends Controller
         return new PHPTemplateView('register_doctor.php', array(
             'action-form' => 'doctor/register',
             'current_doctor' => $doctor,
+            'current_user' => $user,
             'message-danger' => $this->sessionManager->getFlash('message-danger'),
             'message-success' => $this->sessionManager->getFlash('message-success')
         ));
@@ -109,9 +117,9 @@ class DoctorController extends Controller
             $doctor = Doctor::fromArray($_POST);
             $doctor->validate();
 
-            $doctor = $this->doctorRepository->registerDoctor($oldDoctor->getId(), $doctor);
+            $doctor = $this->doctorRepository->updateDoctor($oldDoctor->getId(), $doctor);
 
-            $this->sessionManager->setFlash('message-success', 'Doctor info registered');
+            $this->sessionManager->setFlash('message-success', 'Doctor info updated');
         } catch (BadRequestException $badRequestException) {
             $this->sessionManager->setFlash(
                 'message-danger',

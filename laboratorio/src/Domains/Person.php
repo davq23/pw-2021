@@ -7,6 +7,10 @@
 
 namespace Domains;
 
+use Domains\Exceptions\InvalidDomainException;
+use DateTime;
+use Exception;
+
 /**
  * Description of Person
  *
@@ -65,7 +69,7 @@ class Person implements Domain
         string $surnames,
         string $familyNames,
         string $birthday,
-        $userId
+        $userId = null
     ) {
         $this->id = $id;
         $this->surnames = $surnames;

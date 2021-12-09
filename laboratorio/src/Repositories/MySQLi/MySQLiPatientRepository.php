@@ -3,36 +3,37 @@
 namespace Repositories\MySQLi;
 
 use Domains\Patient;
+use Exception;
 use Repositories\Exceptions\DomainNotFoundException;
 use Repositories\PatientRepository;
 
+/**
+ * Description of MySQLiPatientRepository
+ *
+ * @author davido
+ */
 class MySQLiPatientRepository extends MySQLiRepository implements PatientRepository
 {
 
     /** {@inheritDoc} */
-    public function fetchAll(int $limit, int $pageNumber = 0): array {
-        $patients = array();
-        $patientArray = $this->dbConnection->fetchAllOffsetPaginated('patients', '*', $limit, $pageNumber);
+    public function deletePatient(Patient $patient): void {
+        $statement = $this->mysqli()->prepare(
+            'DELETE FROM patients WHERE id = ?'
+        );
 
-        foreach ($patientArray as $patientRow) {
-            $patients[] = new Patient(
-                $patientRow['id'],
-                $patientRow['surnames'],
-                $patientRow['family_names'],
-                $patientRow['birthday'],
-                $patientRow['user_id']
-            );
-        }
+        $patientId = $patient->getId();
 
-        return $patients;
+        $statement->bind_param('s', $patientId);
+
+        $statement->execute();
     }
 
     /** {@inheritDoc} */
-    public function findById($id): ?Patient {
+    public function findById($id): Patient {
         $patient = null;
 
         $statement = $this->mysqli()->prepare(
-            'SELECT surnames, family_names, birthday, user_id FROM patients WHERE id = ? LIMIT 1'
+            'SELECT surname, family_name, birthday, dni, email FROM patients WHERE id = ? LIMIT 1'
         );
 
         $statement->bind_param('i', $id);
@@ -44,67 +45,11 @@ class MySQLiPatientRepository extends MySQLiRepository implements PatientReposit
         while ($patientArray = mysqli_fetch_assoc($result)) {
             $patient = new Patient(
                 $id,
-                $patientArray['surnames'],
-                $patientArray['family_names'],
+                $patientArray['surname'],
+                $patientArray['family_name'],
                 $patientArray['birthday'],
-                $patientArray['user_id']
-            );
-        }
-
-        if (!$patient) {
-            throw new DomainNotFoundException();
-        }
-
-        return $patient;
-    }
-
-    /** {@inheritDoc} */
-    public function searchByName(string $name): array {
-        $patients = array();
-        $name .= '%';
-
-        $statement = $this->mysqli()->prepare(
-            'SELECT id, surnames, family_names, birthday, user_id FROM patients WHERE name LIKE ?'
-        );
-
-        $statement->bind_param('s', $name);
-
-        $statement->execute();
-
-        $result = $statement->get_result();
-
-        while ($patientArray = mysqli_fetch_assoc($result)) {
-            $patients[] = new Patient(
-                $patientArray['id'],
-                $patientArray['surnames'],
-                $patientArray['family_names'],
-                $patientArray['birthday'],
-                $patientArray['user_id'],
-            );
-        }
-
-        return $patients;
-    }
-
-    /** {@inheritDoc} */
-    public function findByUserId($userId): Patient {
-        $statement = $this->mysqli()->prepare(
-            'SELECT id, surnames, family_names, birthday FROM patients WHERE user_id = ? LIMIT 1'
-        );
-
-        $statement->bind_param('s', $userId);
-
-        $statement->execute();
-
-        $result = $statement->get_result();
-
-        while ($patientArray = mysqli_fetch_assoc($result)) {
-            $patient = new Patient(
-                $patientArray['id'],
-                $patientArray['surnames'],
-                $patientArray['family_names'],
-                $patientArray['birthday'],
-                $userId
+                $patientArray['dni'],
+                $patientArray['email']
             );
         }
 
@@ -118,15 +63,38 @@ class MySQLiPatientRepository extends MySQLiRepository implements PatientReposit
     /** {@inheritDoc} */
     public function registerPatient(Patient $patient): Patient {
         $statement = $this->mysqli()->prepare(
-            'INSERT INTO patients (surnames, family_names, birthday, user_id) VALUES (?, ?, ?, ?)'
+            'INSERT INTO patients (surname, family_name, birthday, dni, email) VALUES (?, ?, ?, ?, ?)'
         );
 
         $surnames = $patient->getSurnames();
         $familyNames = $patient->getFamilyNames();
         $birthday = $patient->getBirthday();
-        $userId = $patient->getUserId();
+        $dni = $patient->getDni();
+        $email = $patient->getEmail();
 
-        $statement->bind_param('ssss', $surnames, $familyNames, $birthday, $userId);
+        $statement->bind_param('sssss', $surnames, $familyNames, $birthday, $dni, $email);
+
+        if (!$statement->execute()) {
+            throw new Exception($this->mysqli()->error);
+        }
+
+        $patient->setId($this->mysqli()->insert_id);
+
+        return $patient;
+    }
+
+    public function updatePatient(Patient $patient): Patient {
+        $surnames = $patient->getSurnames();
+        $familyNames = $patient->getFamilyNames();
+        $birthday = $patient->getBirthday();
+        $patientId = $patient->getId();
+        $email = $patient->getEmail();
+
+        $statement = $this->mysqli()->prepare(
+            'UPDATE patients SET surname = ?, family_name = ?, birthday = ?, email = ? WHERE id = ?'
+        );
+
+        $statement->bind_param('sssss', $surnames, $familyNames, $birthday, $email, $patientId);
 
         $statement->execute();
 
@@ -134,23 +102,8 @@ class MySQLiPatientRepository extends MySQLiRepository implements PatientReposit
     }
 
     /** {@inheritDoc} */
-    public function updatePatient(Patient $patient): Patient {
-        $surnames = $patient->getSurnames();
-        $familyNames = $patient->getFamilyNames();
-        $birthday = $patient->getBirthday();
-        $patientId = $patient->getId();
-
-        $statement = $this->mysqli()->prepare(
-            'UPDATE patients SET surnames = ?, family_names = ?, birthday = ? WHERE id = ?'
-        );
-
-        $statement->bind_param('ssss', $surnames, $familyNames, $birthday, $patientId);
-
-        $statement->execute();
-
-        $patient->setId($this->mysqli()->insert_id);
-
-        return $patient;
+    public function fetchAll(): array {
+        return $this->dbConnection->fetchAll('patients');
     }
 
 }

@@ -6,7 +6,7 @@ use Domains\Exceptions\InvalidDomainException;
 
 class User implements Domain
 {
-    public const USER_ROLE_PATIENT = 'patient';
+    public const USER_ROLE_NURSE = 'nurse';
     public const USER_ROLE_DOCTOR = 'doctor';
 
     /**
@@ -86,7 +86,7 @@ class User implements Domain
         string $email,
         string $username,
         string $password,
-        string $userRole = self::USER_ROLE_PATIENT,
+        string $userRole = self::USER_ROLE_NURSE,
         bool $passwordHashed = false
     ) {
         $this->id = $id;

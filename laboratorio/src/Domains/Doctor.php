@@ -51,12 +51,12 @@ class Doctor extends Person
     public function validate(): void {
         parent::validate();
 
-        if (count($this->credentials) === 0) {
+        if (!is_array($this->credentials) || count($this->credentials) === 0) {
             throw new InvalidDomainException('A doctor must have credentials');
         }
     }
 
-    public function fromArray(array $source): Doctor {
+    public static function fromArray(array $source): Doctor {
         return new Doctor(
             $source['id'] ?? null,
             $source['surnames'] ?? null,

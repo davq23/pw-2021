@@ -12,9 +12,18 @@
                     <div class="nav-item">
                         <a href="<?= BASE_URL . 'exams' ?>"
                            class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/exams') !== false ? 'active' : '' ?>">
-                            <i class="bi bi-file-text-fill"></i> My Exams
+                            <i class="bi bi-file-text-fill"></i> Exams
                         </a>
                     </div>
+                    <?php if ($this->data['current_user']->getUserRole() === Domains\User::USER_ROLE_NURSE): ?>
+                        <div class="nav-item">
+                            <a href="<?= BASE_URL . '/patients/new' ?>"
+                               class="nav-link <?= strpos($_SERVER['REQUEST_URI'], '/patients/new') !== false ? 'active' : '' ?>">
+                                <i class="bi bi-file-text-fill"></i> New Patient
+                            </a>
+
+                        </div>
+                    <?php endif; ?>
                 <?php else : ?>
                     <li class="nav-item">
                         <a href="<?= BASE_URL . 'login' ?>"
@@ -39,10 +48,10 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton1">
                     <li><a class="dropdown-item" href="<?=
-                        $this->data['current_user']->getUserRole() === \Domains\User::USER_ROLE_PATIENT ?
-                            BASE_URL . 'patients/register' : BASE_URL . 'doctors/register'
+                        $this->data['current_user']->getUserRole() === \Domains\User::USER_ROLE_NURSE ?
+                            BASE_URL . 'nurses/register' : BASE_URL . 'doctors/register'
                         ?>">Profile info</a></li>
-                    <li><a class="dropdown-item"  href="<?= BASE_URL . 'patients/register' ?>">Another action</a></li>
+                    <li><a class="dropdown-item"  href="<?= BASE_URL . 'nurses/register' ?>">Another action</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li class="text-center">
                         <form action="<?= BASE_URL . 'logout' ?>" method="post">

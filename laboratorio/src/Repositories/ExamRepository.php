@@ -3,6 +3,8 @@
 namespace Repositories;
 
 use Domains\Exam;
+use Domains\ExamType;
+use Repositories\Exceptions\DomainNotFoundException;
 
 interface ExamRepository
 {
@@ -27,6 +29,14 @@ interface ExamRepository
     public function fetchAllByUserId(int $limit, int $offset, $userId): array;
 
     /**
+     *
+     * @param $id
+     * @return Exam
+     * @throws DomainNotFoundException
+     */
+    public function fetchById($id): Exam;
+
+    /**
      * Register exam
      *
      * @param Exam $exam
@@ -35,10 +45,25 @@ interface ExamRepository
     public function registerExam(Exam $exam): Exam;
 
     /**
-     * Get exam count by user ID
+     * Registers exam results
+     *
+     * @param Exam $exam
+     */
+    public function registerResults(Exam $exam);
+
+    /**
+     * Get exam count by nurse ID
+     *
+     * @param mixed $nurseId
+     * @return integer
+     */
+    public function getExamCountByNurseId($nurseId): int;
+
+    /**
+     * Get exam count by doctor ID
      *
      * @param mixed $userId
      * @return integer
      */
-    public function getExamCountByUserId($userId): int;
+    public function getExamCountByDoctorId($doctorId): int;
 }

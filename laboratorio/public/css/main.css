@@ -1,3 +1,11 @@
 .fs-extra-large {
     font-size: 500%;
 }
+
+option[value=""] {
+    color: lightgray;
+}
+
+.align-items-center {
+    align-items: center;
+}

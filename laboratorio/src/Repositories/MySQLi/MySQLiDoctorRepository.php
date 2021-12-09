@@ -5,7 +5,7 @@ namespace Repositories\MySQLi;
 use Domains\Doctor;
 use Repositories\DoctorRepository;
 use Repositories\Exceptions\DomainNotFoundException;
-use Swoole\MySQL\Exception;
+use Exception;
 
 /**
  * Description of MySQLiDoctorRepository
@@ -51,7 +51,7 @@ class MySQLiDoctorRepository extends MySQLiRepository implements DoctorRepositor
     public function findByUserId($userId): Doctor {
         $doctor = null;
         $statement = $this->mysqli()->prepare(
-            'SELECT surnames, family_names, birthday, credentials, user_id FROM doctors WHERE user_id = ? LIMIT 1'
+            'SELECT id, surnames, family_names, birthday, credentials, user_id FROM doctors WHERE user_id = ? LIMIT 1'
         );
 
         $statement->bind_param('s', $userId);
@@ -81,11 +81,61 @@ class MySQLiDoctorRepository extends MySQLiRepository implements DoctorRepositor
     }
 
     public function registerDoctor(Doctor $doctor): Doctor {
+        $statement = $this->mysqli()->prepare(
+            'INSERT INTO doctors (surnames, family_names, birthday, user_id, credentials) VALUES (?, ?, ?, ?, ?)'
+        );
+
+        $surnames = $doctor->getSurnames();
+        $familyNames = $doctor->getFamilyNames();
+        $birthday = $doctor->getBirthday();
+        $userId = $doctor->getUserId();
+        $credentialsStr = implode(',', $doctor->getCredentials());
+
+        $statement->bind_param(
+            'sssss',
+            $surnames,
+            $familyNames,
+            $birthday,
+            $userId,
+            $credentialsStr
+        );
+
+        if (!$statement->execute()) {
+            throw new Exception($this->mysqli()->error);
+        }
+
         return $doctor;
     }
 
     public function updateDoctor($doctorId, Doctor $doctor): Doctor {
+        $statement = $this->mysqli()->prepare(
+            'UPDATE doctors SET surnames = ?, family_names = ?, birthday = ?, credentials = ? WHERE id = ?'
+        );
+
+        $surnames = $doctor->getSurnames();
+        $familyNames = $doctor->getFamilyNames();
+        $birthday = $doctor->getBirthday();
+        $credentialsStr = implode(',', $doctor->getCredentials());
+
+        $statement->bind_param(
+            'sssss',
+            $surnames,
+            $familyNames,
+            $birthday,
+            $credentialsStr,
+            $doctorId
+        );
+
+        if (!$statement->execute()) {
+            throw new Exception($this->mysqli()->error);
+        }
+
         return $doctor;
+    }
+
+    /** {@inheritDoc} */
+    public function fetchAll(): array {
+        return $this->dbConnection->fetchAll('doctors');
     }
 
 }

@@ -10,6 +10,7 @@ use Domains\Exceptions\InvalidDomainException;
 use Exception;
 use ReflectionClass;
 use ReflectionException;
+use Throwable;
 use Views\View;
 
 /**
@@ -79,6 +80,11 @@ class App
             http_response_code(422);
         } catch (Exception $ex) {
             error_log($ex->getMessage());
+            return 'Unexpected error';
+            http_response_code(500);
+        } catch (Throwable $th) {
+            error_log($th);
+            return 'Unexpected error';
             http_response_code(500);
         }
 
