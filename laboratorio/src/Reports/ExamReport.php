@@ -40,8 +40,11 @@ class ExamReport extends tFPDF implements Report
         $this->AddPage();
 
         $this->Cell(160, 25, 'DESCRIPTION');
+        $this->Ln();
         $this->MultiCell(160, 25, $this->exam->getDescription());
+        $this->Ln();
         $this->Cell(160, 25, 'RESULTS');
+        $this->Ln();
         $this->MultiCell(160, 25, $this->exam->getResults());
     }
 
